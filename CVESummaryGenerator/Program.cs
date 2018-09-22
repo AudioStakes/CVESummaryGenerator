@@ -14,7 +14,6 @@ namespace CVESummaryGenerator
     {
         public static void Main(string[] args)
         {
-
             // まとめ作成対象CVE一覧を取得
             var targetCVElist = new List<string>(){
                 "CVE-2018-8308",
@@ -30,25 +29,45 @@ namespace CVESummaryGenerator
             string WIN2012 = "Windows Server 2012 R2 (Server Core installation)";
             string WIN2016 = "Windows Server 2016  (Server Core installation)";
 
+            var targetOSs = new List<string>(){
+                "Windows Server 2008 for 32-bit Systems Service Pack 2",
+                "Windows Server 2012 R2 (Server Core installation)",
+                "Windows Server 2016  (Server Core installation)"
+            };
+
             // まとめデータを格納するテーブルを作成
             DataSet dataSet = new DataSet(); // 表形式のデータをメモリ領域へ格納するクラス
             DataTable table = new DataTable("SummaryTable"); // 表形式のデータを扱う
 
+            // カラム名
+            string CveNumber = "CVE";
+            string CveTitle = "概要";
+            string Description = "詳細";
+            string PubliclyDisclosed = "一般に公開";
+            string Exploited = "悪用";
+            string LatestReleaseExploitability = "最新のソフトウェア リリース";
+            string OlderReleaseExploitability = "過去のソフトウェア リリース";
+            string VectorString = "CVSS";
+            string BaseScore = "BaseScore";
+            string TemporalScore = "TemporalScore";
+            string Severity = "深刻度";
+
             // テーブルにカラム名の追加
-            table.Columns.Add("CVE");
-            table.Columns.Add("概要");
-            table.Columns.Add("詳細");
-            table.Columns.Add("一般に公開");
-            table.Columns.Add("悪用");
-            table.Columns.Add("最新のソフトウェア リリース");
-            table.Columns.Add("過去のソフトウェア リリース");
-            table.Columns.Add("VectorString");
-            table.Columns.Add("BaseScore", Type.GetType("System.Double"));
-            table.Columns.Add("TemporalScore", Type.GetType("System.Double"));
-            table.Columns.Add("Severity");
-            table.Columns.Add(WIN2008);
-            table.Columns.Add(WIN2012);
-            table.Columns.Add(WIN2016);
+            table.Columns.Add(CveNumber);
+            table.Columns.Add(CveTitle);
+            table.Columns.Add(Description);
+            table.Columns.Add(PubliclyDisclosed);
+            table.Columns.Add(Exploited);
+            table.Columns.Add(LatestReleaseExploitability);
+            table.Columns.Add(OlderReleaseExploitability);
+            table.Columns.Add(VectorString);
+            table.Columns.Add(BaseScore, Type.GetType("System.Double"));
+            table.Columns.Add(TemporalScore, Type.GetType("System.Double"));
+            table.Columns.Add(Severity);
+            foreach (var product in targetOSs)
+            {
+                table.Columns.Add(product);
+            }
 
             // DataSetにDataTableを追加
             dataSet.Tables.Add(table);
@@ -72,7 +91,6 @@ namespace CVESummaryGenerator
                     {
                         // APIからjson形式の文字列を取得
                         jsonString = wc.DownloadString(@"https://portal.msrc.microsoft.com/api/security-guidance/ja-JP/CVE/" + cve);
-
                     }
                     catch (WebException ex)
                     {
@@ -140,8 +158,8 @@ namespace CVESummaryGenerator
                     }
 
                     // tableへのデータ追加用文字列を作成
-                    var LatestReleaseExploitability = sg.ExploitabilityAssessment.LatestReleaseExploitability.Id.ToString() + "-" + sg.ExploitabilityAssessment.LatestReleaseExploitability.Name; // 最新のソフトウェア リリース
-                    var OlderReleaseExploitability = sg.ExploitabilityAssessment.OlderReleaseExploitability.Id.ToString() + "-" + sg.ExploitabilityAssessment.OlderReleaseExploitability.Name; // 過去のソフトウェア リリース
+                    var LatestRelease = sg.ExploitabilityAssessment.LatestReleaseExploitability.Id.ToString() + "-" + sg.ExploitabilityAssessment.LatestReleaseExploitability.Name; // 最新のソフトウェア リリース
+                    var OlderRelease = sg.ExploitabilityAssessment.OlderReleaseExploitability.Id.ToString() + "-" + sg.ExploitabilityAssessment.OlderReleaseExploitability.Name; // 過去のソフトウェア リリース
 
                     // Rows.Addメソッドを使ってデータを追加
                     table.Rows.Add(cve
@@ -149,8 +167,8 @@ namespace CVESummaryGenerator
                         , sg.Description.Replace("\n", "")
                         , sg.PubliclyDisclosed
                         , sg.Exploited
-                        , LatestReleaseExploitability
-                        , OlderReleaseExploitability
+                        , LatestRelease
+                        , OlderRelease
                         , summaryOfTargetProducts.VectorString
                         , summaryOfTargetProducts.BaseScore
                         , summaryOfTargetProducts.TemporalScore
@@ -179,8 +197,10 @@ namespace CVESummaryGenerator
             // ファイル名を現在時刻を「西暦月日時分秒」形式で取得する
             string now = DateTime.Now.ToString("yyyyMMddHHmmss");
 
-            // 保存先のCSVファイルのパス
-            string csvPath = CurrentDir + "/" + now + ".csv";
+            string fname = now + ".csv";
+
+            // 保存先のCSVファイルのパスを組み立てる
+            string csvPath = Path.Combine(CurrentDir, fname);
 
             // DataTableをCSVで保存する
             csv.ConvertDataTableToCsv(table, csvPath, true);

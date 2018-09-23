@@ -79,10 +79,18 @@ namespace CVESummaryGenerator
 
                 foreach (var cve in targetCVElist)
                 {
+
+                    // CVEに対応する行を作成
+                    DataRow workRow = table.NewRow();
+
+                    // CVENumberを格納
+                    workRow[CveNumber] = cve;
                     Console.WriteLine(cve);
+
                     if (!Regex.IsMatch(cve, @"(CVE-20[0-9][0-9]-\d{4}|ADV\d{6})"))
                     {
-                        Console.WriteLine("正規表現と一致しないため、飛ばします");
+                        workRow[CveTitle] = "CVEの正規表現と一致しません";
+                        table.Rows.Add(workRow);
                         continue;
                     }
 
@@ -95,6 +103,8 @@ namespace CVESummaryGenerator
                     catch (WebException ex)
                     {
                         Console.WriteLine(ex.Message);
+                        workRow[CveTitle] = ex.Message;
+                        table.Rows.Add(workRow);
                         continue;
                     }
                     // ダウンロードしたjson文字列を出力
@@ -107,6 +117,19 @@ namespace CVESummaryGenerator
 
                     // 対象とする製品のデータを抽出する
                     var targetProducts = sg.AffectedProducts.Where(n => n.Name == WIN2008 || n.Name == WIN2012 || n.Name == WIN2016);
+
+                    // targetProductsの有無を判別し、なければ処理終了
+                    if (!targetProducts.Any()){
+                        workRow[CveTitle] = "CVEの対象製品の中に目的の製品が含まれていません";
+                        table.Rows.Add(workRow);
+                        continue;
+                    }
+
+                    // 共通項目のデータを格納する
+                    workRow[CveTitle] = sg.CveTitle;
+                    workRow[Description] = sg.Description.Replace("\n", "");
+                    workRow[PubliclyDisclosed] = sg.PubliclyDisclosed;
+                    workRow[Exploited] = sg.Exploited;
 
                     // まとめデータ格納用クラスの初期化
                     AffectedProduct summaryOfTargetProducts = new AffectedProduct();
@@ -161,21 +184,19 @@ namespace CVESummaryGenerator
                     var LatestRelease = sg.ExploitabilityAssessment.LatestReleaseExploitability.Id.ToString() + "-" + sg.ExploitabilityAssessment.LatestReleaseExploitability.Name; // 最新のソフトウェア リリース
                     var OlderRelease = sg.ExploitabilityAssessment.OlderReleaseExploitability.Id.ToString() + "-" + sg.ExploitabilityAssessment.OlderReleaseExploitability.Name; // 過去のソフトウェア リリース
 
+                    // 対象製品データのまとめを格納する
+                    workRow[LatestReleaseExploitability] = LatestRelease;
+                    workRow[OlderReleaseExploitability] = OlderRelease;
+                    workRow[VectorString] = summaryOfTargetProducts.VectorString;
+                    workRow[BaseScore] = summaryOfTargetProducts.BaseScore;
+                    workRow[TemporalScore] = summaryOfTargetProducts.TemporalScore;
+                    workRow[Severity] = summaryOfTargetProducts.Severity;
+                    workRow[WIN2008] = containsWIN2008;
+                    workRow[WIN2012] = containsWIN2012;
+                    workRow[WIN2016] = containsWIN2016;
+
                     // Rows.Addメソッドを使ってデータを追加
-                    table.Rows.Add(cve
-                        , sg.CveTitle
-                        , sg.Description.Replace("\n", "")
-                        , sg.PubliclyDisclosed
-                        , sg.Exploited
-                        , LatestRelease
-                        , OlderRelease
-                        , summaryOfTargetProducts.VectorString
-                        , summaryOfTargetProducts.BaseScore
-                        , summaryOfTargetProducts.TemporalScore
-                        , summaryOfTargetProducts.Severity
-                        , containsWIN2008
-                        , containsWIN2012
-                        , containsWIN2016);
+                    table.Rows.Add(workRow);
                 }
             }
 
@@ -206,7 +227,6 @@ namespace CVESummaryGenerator
             csv.ConvertDataTableToCsv(table, csvPath, true);
 
             Console.ReadLine();
-
         }
     }
 }

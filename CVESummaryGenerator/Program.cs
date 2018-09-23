@@ -18,7 +18,7 @@ namespace CVESummaryGenerator
             var targetCVElist = new List<string>(){
                 "CVE-2018-8308",
                 "CVE-2018-8309",
-                "CVE-2018-8310",
+                "CVE-2018-8176",
                 "CVE-2018-8311",
                 "ADV113456",
                 "正規表現と一致しない"
@@ -51,6 +51,7 @@ namespace CVESummaryGenerator
             string BaseScore = "BaseScore";
             string TemporalScore = "TemporalScore";
             string Severity = "深刻度";
+            string Remarks = "備考";
 
             // テーブルにカラム名の追加
             table.Columns.Add(CveNumber);
@@ -68,6 +69,7 @@ namespace CVESummaryGenerator
             {
                 table.Columns.Add(product);
             }
+            table.Columns.Add(Remarks);
 
             // DataSetにDataTableを追加
             dataSet.Tables.Add(table);
@@ -89,7 +91,7 @@ namespace CVESummaryGenerator
 
                     if (!Regex.IsMatch(cve, @"(CVE-20[0-9][0-9]-\d{4}|ADV\d{6})"))
                     {
-                        workRow[CveTitle] = "CVEの正規表現と一致しません";
+                        workRow[Remarks] = "CVEの正規表現と一致しません";
                         table.Rows.Add(workRow);
                         continue;
                     }
@@ -103,7 +105,7 @@ namespace CVESummaryGenerator
                     catch (WebException ex)
                     {
                         Console.WriteLine(ex.Message);
-                        workRow[CveTitle] = ex.Message;
+                        workRow[Remarks] = ex.Message;
                         table.Rows.Add(workRow);
                         continue;
                     }
@@ -115,21 +117,22 @@ namespace CVESummaryGenerator
 
                     // TODO：「サービス拒否」の項目はjsonにないのか確認
 
-                    // 対象とする製品のデータを抽出する
-                    var targetProducts = sg.AffectedProducts.Where(n => n.Name == WIN2008 || n.Name == WIN2012 || n.Name == WIN2016);
-
-                    // targetProductsの有無を判別し、なければ処理終了
-                    if (!targetProducts.Any()){
-                        workRow[CveTitle] = "CVEの対象製品の中に目的の製品が含まれていません";
-                        table.Rows.Add(workRow);
-                        continue;
-                    }
-
                     // 共通項目のデータを格納する
                     workRow[CveTitle] = sg.CveTitle;
                     workRow[Description] = sg.Description.Replace("\n", "");
                     workRow[PubliclyDisclosed] = sg.PubliclyDisclosed;
                     workRow[Exploited] = sg.Exploited;
+
+                    // 対象とする製品のデータを抽出する
+                    var targetProducts = sg.AffectedProducts.Where(n => n.Name == WIN2008 || n.Name == WIN2012 || n.Name == WIN2016);
+
+                    // targetProductsの有無を判別し、なければ処理終了
+                    if (!targetProducts.Any())
+                    {
+                        workRow[Remarks] = "CVEの対象製品の中に目的の製品が含まれていません";
+                        table.Rows.Add(workRow);
+                        continue;
+                    }
 
                     // まとめデータ格納用クラスの初期化
                     AffectedProduct summaryOfTargetProducts = new AffectedProduct();

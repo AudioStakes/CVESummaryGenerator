@@ -84,7 +84,7 @@ namespace CVESummaryGenerator
                     workRow[CveNumber] = cve;
                     Console.WriteLine(cve);
 
-                    if (!Regex.IsMatch(cve, @"(CVE-20[0-9][0-9]-\d{4}|ADV\d{6})"))
+                    if (!Regex.IsMatch(cve, @"^(CVE-20[0-9][0-9]-\d{4}$|^ADV\d{6}$)"))
                     {
                         workRow[Remarks] = "CVEの正規表現と一致しません";
                         table.Rows.Add(workRow);
@@ -229,7 +229,7 @@ namespace CVESummaryGenerator
 
         private static string GetTargetCVEs()
         {
-            return @"CVE-2018-8308 CVE-2018-8309 CVE-2018-8176 CVE-2018-8311 ADV113456 正規表現と一致しない";
+            return @"CVE-2018-8308 CVE-2018-83080 CVE-2018-8176 CVE-2018-8311 ADV113456 正規表現と一致しない";
         }
     }
 }

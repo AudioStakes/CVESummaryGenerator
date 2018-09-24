@@ -15,8 +15,10 @@ namespace CVESummaryGenerator
         public static void Main(string[] args)
         {
             // まとめ作成対象CVE一覧を取得
-            var targetCVElist = GetTargetCVEList();
+            var targetCVEs = GetTargetCVEs();
 
+            // まとめ対象CVEを分割してリスト化
+            string[] targetCVElist = targetCVEs.Split(' ');
             // 対象製品名を変数に設定
             string WIN2008 = "Windows Server 2008 for 32-bit Systems Service Pack 2";
             string WIN2012 = "Windows Server 2012 R2 (Server Core installation)";
@@ -225,16 +227,9 @@ namespace CVESummaryGenerator
             Console.ReadLine();
         }
 
-        private static List<string> GetTargetCVEList()
+        private static string GetTargetCVEs()
         {
-            return new List<string>(){
-                "CVE-2018-8308",
-                "CVE-2018-8309",
-                "CVE-2018-8176",
-                "CVE-2018-8311",
-                "ADV113456",
-                "正規表現と一致しない"
-            };
+            return @"CVE-2018-8308 CVE-2018-8309 CVE-2018-8176 CVE-2018-8311 ADV113456 正規表現と一致しない";
         }
     }
 }

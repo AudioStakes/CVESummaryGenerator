@@ -207,9 +207,20 @@ namespace CVESummaryGenerator
                 }
             }
 
+            // ＣＳＶファイル保存先の完全パスを取得
+            string csvPath = GetFullPathWithCurrentDirectoryAndCurrentTimeAsCSVFileName();
+
             // CSVコンバーターを呼び出す
             DatatableToCSVConverter csv = new DatatableToCSVConverter();
 
+            // DataTableをCSVで保存する
+            csv.ConvertDataTableToCsv(table, csvPath, true);
+
+            Console.ReadLine();
+        }
+
+        private static string GetFullPathWithCurrentDirectoryAndCurrentTimeAsCSVFileName()
+        {
             // カレントディレクトリのパスを取得する
             string CurrentDir = Directory.GetCurrentDirectory();
 
@@ -219,12 +230,7 @@ namespace CVESummaryGenerator
             string fname = now + ".csv";
 
             // 保存先のCSVファイルのパスを組み立てる
-            string csvPath = Path.Combine(CurrentDir, fname);
-
-            // DataTableをCSVで保存する
-            csv.ConvertDataTableToCsv(table, csvPath, true);
-
-            Console.ReadLine();
+            return Path.Combine(CurrentDir, fname);
         }
 
         private static string GetTargetCVEs()

@@ -19,52 +19,34 @@ namespace CVESummaryGenerator
 
             // まとめ対象CVEを分割してリスト化
             string[] targetCVElist = targetCVEs.Split(' ');
-            // 対象製品名を変数に設定
-            string WIN2008 = "Windows Server 2008 for 32-bit Systems Service Pack 2";
-            string WIN2012 = "Windows Server 2012 R2 (Server Core installation)";
-            string WIN2016 = "Windows Server 2016  (Server Core installation)";
 
             var targetOSs = new List<string>(){
-                "Windows Server 2008 for 32-bit Systems Service Pack 2",
-                "Windows Server 2012 R2 (Server Core installation)",
-                "Windows Server 2016  (Server Core installation)"
+                Constants.ProductName.Win_2008_32Bit_SP2,
+                Constants.ProductName.Win_2012_R2_SeverCore,
+                Constants.ProductName.Win_2016_ServerCore
             };
 
             // まとめデータを格納するテーブルを作成
             DataSet dataSet = new DataSet(); // 表形式のデータをメモリ領域へ格納するクラス
             DataTable table = new DataTable("SummaryTable"); // 表形式のデータを扱う
 
-            // カラム名
-            string CveNumber = "CVE";
-            string CveTitle = "概要";
-            string Description = "詳細";
-            string PubliclyDisclosed = "一般に公開";
-            string Exploited = "悪用";
-            string LatestReleaseExploitability = "最新のソフトウェア リリース";
-            string OlderReleaseExploitability = "過去のソフトウェア リリース";
-            string VectorString = "CVSS";
-            string BaseScore = "BaseScore";
-            string TemporalScore = "TemporalScore";
-            string Severity = "深刻度";
-            string Remarks = "備考";
-
             // テーブルにカラム名の追加
-            table.Columns.Add(CveNumber);
-            table.Columns.Add(CveTitle);
-            table.Columns.Add(Description);
-            table.Columns.Add(PubliclyDisclosed);
-            table.Columns.Add(Exploited);
-            table.Columns.Add(LatestReleaseExploitability);
-            table.Columns.Add(OlderReleaseExploitability);
-            table.Columns.Add(VectorString);
-            table.Columns.Add(BaseScore, Type.GetType("System.Double"));
-            table.Columns.Add(TemporalScore, Type.GetType("System.Double"));
-            table.Columns.Add(Severity);
+            table.Columns.Add(Constants.ColumnName.CveNumber);
+            table.Columns.Add(Constants.ColumnName.CveTitle);
+            table.Columns.Add(Constants.ColumnName.Description);
+            table.Columns.Add(Constants.ColumnName.PubliclyDisclosed);
+            table.Columns.Add(Constants.ColumnName.Exploited);
+            table.Columns.Add(Constants.ColumnName.LatestReleaseExploitability);
+            table.Columns.Add(Constants.ColumnName.OlderReleaseExploitability);
+            table.Columns.Add(Constants.ColumnName.VectorString);
+            table.Columns.Add(Constants.ColumnName.BaseScore, Type.GetType("System.Double"));
+            table.Columns.Add(Constants.ColumnName.TemporalScore, Type.GetType("System.Double"));
+            table.Columns.Add(Constants.ColumnName.Severity);
             foreach (var product in targetOSs)
             {
                 table.Columns.Add(product);
             }
-            table.Columns.Add(Remarks);
+            table.Columns.Add(Constants.ColumnName.Remarks);
 
             // DataSetにDataTableを追加
             dataSet.Tables.Add(table);
@@ -81,12 +63,12 @@ namespace CVESummaryGenerator
                     DataRow workRow = table.NewRow();
 
                     // CVENumberを格納
-                    workRow[CveNumber] = cve;
+                    workRow[Constants.ColumnName.CveNumber] = cve;
                     Console.WriteLine(cve);
 
                     if (!Regex.IsMatch(cve, @"^(CVE-20[0-9][0-9]-\d{4}$|^ADV\d{6}$)"))
                     {
-                        workRow[Remarks] = "CVEの正規表現と一致しません";
+                        workRow[Constants.ColumnName.Remarks] = "CVEの正規表現と一致しません";
                         table.Rows.Add(workRow);
                         continue;
                     }
@@ -100,7 +82,7 @@ namespace CVESummaryGenerator
                     catch (WebException ex)
                     {
                         Console.WriteLine(ex.Message);
-                        workRow[Remarks] = ex.Message;
+                        workRow[Constants.ColumnName.Remarks] = ex.Message;
                         table.Rows.Add(workRow);
                         continue;
                     }
@@ -113,18 +95,21 @@ namespace CVESummaryGenerator
                     // TODO：「サービス拒否」の項目はjsonにないのか確認
 
                     // 共通項目のデータを格納する
-                    workRow[CveTitle] = sg.CveTitle;
-                    workRow[Description] = sg.Description.Replace("\n", "");
-                    workRow[PubliclyDisclosed] = sg.PubliclyDisclosed;
-                    workRow[Exploited] = sg.Exploited;
+                    workRow[Constants.ColumnName.CveTitle] = sg.CveTitle;
+                    workRow[Constants.ColumnName.Description] = sg.Description.Replace("\n", "");
+                    workRow[Constants.ColumnName.PubliclyDisclosed] = sg.PubliclyDisclosed;
+                    workRow[Constants.ColumnName.Exploited] = sg.Exploited;
 
                     // 対象とする製品のデータを抽出する
-                    var targetProducts = sg.AffectedProducts.Where(n => n.Name == WIN2008 || n.Name == WIN2012 || n.Name == WIN2016);
+                    var targetProducts = sg.AffectedProducts.Where(n => n.Name == Constants.ProductName.Win_2008_32Bit_SP2
+                                                                   || n.Name == Constants.ProductName.Win_2012_R2_SeverCore
+                                                                   || n.Name == Constants.ProductName.Win_2016_ServerCore
+                                                                  );
 
                     // targetProductsの有無を判別し、なければ処理終了
                     if (!targetProducts.Any())
                     {
-                        workRow[Remarks] = "CVEの対象製品の中に目的の製品が含まれていません";
+                        workRow[Constants.ColumnName.Remarks] = "CVEの対象製品の中に目的の製品が含まれていません";
                         table.Rows.Add(workRow);
                         continue;
                     }
@@ -142,9 +127,9 @@ namespace CVESummaryGenerator
                     foreach (var product in targetProducts)
                     {
                         // ＣＶＥの対象製品が以下の製品のどれに該当するかチェックする
-                        if (product.Name == WIN2008) { containsWIN2008 = "○"; }
-                        if (product.Name == WIN2012) { containsWIN2012 = "○"; }
-                        if (product.Name == WIN2016) { containsWIN2016 = "○"; }
+                        if (product.Name == Constants.ProductName.Win_2008_32Bit_SP2) { containsWIN2008 = "○"; }
+                        if (product.Name == Constants.ProductName.Win_2012_R2_SeverCore) { containsWIN2012 = "○"; }
+                        if (product.Name == Constants.ProductName.Win_2016_ServerCore) { containsWIN2016 = "○"; }
 
                         if (isFirst)
                         {
@@ -183,15 +168,15 @@ namespace CVESummaryGenerator
                     var OlderRelease = sg.ExploitabilityAssessment.OlderReleaseExploitability.Id.ToString() + "-" + sg.ExploitabilityAssessment.OlderReleaseExploitability.Name; // 過去のソフトウェア リリース
 
                     // 対象製品データのまとめを格納する
-                    workRow[LatestReleaseExploitability] = LatestRelease;
-                    workRow[OlderReleaseExploitability] = OlderRelease;
-                    workRow[VectorString] = summaryOfTargetProducts.VectorString;
-                    workRow[BaseScore] = summaryOfTargetProducts.BaseScore;
-                    workRow[TemporalScore] = summaryOfTargetProducts.TemporalScore;
-                    workRow[Severity] = summaryOfTargetProducts.Severity;
-                    workRow[WIN2008] = containsWIN2008;
-                    workRow[WIN2012] = containsWIN2012;
-                    workRow[WIN2016] = containsWIN2016;
+                    workRow[Constants.ColumnName.LatestReleaseExploitability] = LatestRelease;
+                    workRow[Constants.ColumnName.OlderReleaseExploitability] = OlderRelease;
+                    workRow[Constants.ColumnName.VectorString] = summaryOfTargetProducts.VectorString;
+                    workRow[Constants.ColumnName.BaseScore] = summaryOfTargetProducts.BaseScore;
+                    workRow[Constants.ColumnName.TemporalScore] = summaryOfTargetProducts.TemporalScore;
+                    workRow[Constants.ColumnName.Severity] = summaryOfTargetProducts.Severity;
+                    workRow[Constants.ProductName.Win_2008_32Bit_SP2] = containsWIN2008;
+                    workRow[Constants.ProductName.Win_2012_R2_SeverCore] = containsWIN2012;
+                    workRow[Constants.ProductName.Win_2016_ServerCore] = containsWIN2016;
 
                     // Rows.Addメソッドを使ってデータを追加
                     table.Rows.Add(workRow);

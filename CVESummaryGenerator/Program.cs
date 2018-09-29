@@ -48,136 +48,123 @@ namespace CVESummaryGenerator
             // DataSetにDataTableを追加
             dataSet.Tables.Add(table);
 
-            // WebClientを初期化
-            using(var wc = new WebClient())
+            foreach (var cve in targetCVElist)
             {
-                wc.Encoding = Encoding.UTF8;
+                // CVEに対応する行を作成
+                DataRow workRow = table.NewRow();
 
-                foreach (var cve in targetCVElist)
+                // CVENumberを格納
+                workRow[Constants.ColumnName.CveNumber] = cve;
+                Console.WriteLine(cve);
+
+                // 正規表現とマッチするかチェックする
+                if (!Regex.IsMatch(cve, @"^(CVE-20[0-9][0-9]-\d{4}$|^ADV\d{6}$)"))
                 {
-
-                    // CVEに対応する行を作成
-                    DataRow workRow = table.NewRow();
-
-                    // CVENumberを格納
-                    workRow[Constants.ColumnName.CveNumber] = cve;
-                    Console.WriteLine(cve);
-
-                    if (!Regex.IsMatch(cve, @"^(CVE-20[0-9][0-9]-\d{4}$|^ADV\d{6}$)"))
-                    {
-                        workRow[Constants.ColumnName.Remarks] = "CVEの正規表現と一致しません";
-                        table.Rows.Add(workRow);
-                        continue;
-                    }
-
-                    string jsonString = "";
-                    try
-                    {
-                        // APIからjson形式の文字列を取得
-                        jsonString = wc.DownloadString(@"https://portal.msrc.microsoft.com/api/security-guidance/ja-JP/CVE/" + cve);
-                    }
-                    catch (WebException ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                        workRow[Constants.ColumnName.Remarks] = ex.Message;
-                        table.Rows.Add(workRow);
-                        continue;
-                    }
-                    // ダウンロードしたjson文字列を出力
-                    Console.WriteLine(jsonString);
-
-                    // JSONを.NETのクラスにデシリアライズ
-                    SecurityGuidance sg = JsonConvert.DeserializeObject<SecurityGuidance>(jsonString);
-
-                    // TODO：「サービス拒否」の項目はjsonにないのか確認
-
-                    // 共通項目のデータを格納する
-                    workRow[Constants.ColumnName.CveTitle] = sg.CveTitle;
-                    workRow[Constants.ColumnName.Description] = sg.Description.Replace("\n", "");
-                    workRow[Constants.ColumnName.PubliclyDisclosed] = sg.PubliclyDisclosed;
-                    workRow[Constants.ColumnName.Exploited] = sg.Exploited;
-
-                    // 対象とする製品のデータを抽出する
-                    var affectedTargetProducts = sg.AffectedProducts.Where(n => n.Name == Constants.ProductName.Win_2008_32Bit_SP2
-                                                                   || n.Name == Constants.ProductName.Win_2012_R2_SeverCore
-                                                                   || n.Name == Constants.ProductName.Win_2016_ServerCore
-                                                                  );
-
-                    // targetProductsの有無を判別し、なければ処理終了
-                    if (!affectedTargetProducts.Any())
-                    {
-                        workRow[Constants.ColumnName.Remarks] = "CVEの対象製品の中に目的の製品が含まれていません";
-                        table.Rows.Add(workRow);
-                        continue;
-                    }
-
-                    // まとめデータ格納用クラスの初期化
-                    AffectedProduct summaryOfTargetProducts = new AffectedProduct();
-
-                    // ループに用いる変数を初期化
-                    bool isFirst = true;
-                    string containsWIN2008 = "☓";
-                    string containsWIN2012 = "☓";
-                    string containsWIN2016 = "☓";
-
-                    // 対象製品データのうち値が同じ項目は一つにまとめる
-                    foreach (var affectedTargetProduct in affectedTargetProducts)
-                    {
-                        // ＣＶＥの対象製品が以下の製品のどれに該当するかチェックする
-                        if (affectedTargetProduct.Name == Constants.ProductName.Win_2008_32Bit_SP2) { containsWIN2008 = "○"; }
-                        if (affectedTargetProduct.Name == Constants.ProductName.Win_2012_R2_SeverCore) { containsWIN2012 = "○"; }
-                        if (affectedTargetProduct.Name == Constants.ProductName.Win_2016_ServerCore) { containsWIN2016 = "○"; }
-
-                        if (isFirst)
-                        {
-                            summaryOfTargetProducts = affectedTargetProduct;
-                            isFirst = false;
-                            continue;
-                        }
-
-                        if (!summaryOfTargetProducts.VectorString.Equals(affectedTargetProduct.VectorString))
-                        {
-                            summaryOfTargetProducts.VectorString = "vectorStringの中に一致しないものがあります";
-                            Console.WriteLine(summaryOfTargetProducts.VectorString);
-                        }
-
-                        if (!summaryOfTargetProducts.BaseScore.Equals(affectedTargetProduct.BaseScore))
-                        {
-                            summaryOfTargetProducts.BaseScore = 0;
-                            Console.WriteLine("baseScoreの中に一致しないものがあります");
-                        }
-
-                        if (!summaryOfTargetProducts.TemporalScore.Equals(affectedTargetProduct.TemporalScore))
-                        {
-                            summaryOfTargetProducts.TemporalScore = 0;
-                            Console.WriteLine("temporalScoreの中に一致しないものがあります");
-                        }
-
-                        if (!summaryOfTargetProducts.Severity.Equals(affectedTargetProduct.Severity))
-                        {
-                            summaryOfTargetProducts.Severity = "severityの中に一致しないものがあります";
-                            Console.WriteLine("severityの中に一致しないものがあります");
-                        }
-                    }
-
-                    // tableへのデータ追加用文字列を作成
-                    var LatestRelease = sg.ExploitabilityAssessment.LatestReleaseExploitability.Id.ToString() + "-" + sg.ExploitabilityAssessment.LatestReleaseExploitability.Name; // 最新のソフトウェア リリース
-                    var OlderRelease = sg.ExploitabilityAssessment.OlderReleaseExploitability.Id.ToString() + "-" + sg.ExploitabilityAssessment.OlderReleaseExploitability.Name; // 過去のソフトウェア リリース
-
-                    // 対象製品データのまとめを格納する
-                    workRow[Constants.ColumnName.LatestReleaseExploitability] = LatestRelease;
-                    workRow[Constants.ColumnName.OlderReleaseExploitability] = OlderRelease;
-                    workRow[Constants.ColumnName.VectorString] = summaryOfTargetProducts.VectorString;
-                    workRow[Constants.ColumnName.BaseScore] = summaryOfTargetProducts.BaseScore;
-                    workRow[Constants.ColumnName.TemporalScore] = summaryOfTargetProducts.TemporalScore;
-                    workRow[Constants.ColumnName.Severity] = summaryOfTargetProducts.Severity;
-                    workRow[Constants.ProductName.Win_2008_32Bit_SP2] = containsWIN2008;
-                    workRow[Constants.ProductName.Win_2012_R2_SeverCore] = containsWIN2012;
-                    workRow[Constants.ProductName.Win_2016_ServerCore] = containsWIN2016;
-
-                    // Rows.Addメソッドを使ってデータを追加
+                    workRow[Constants.ColumnName.Remarks] = "CVEの正規表現と一致しません";
                     table.Rows.Add(workRow);
+                    continue;
                 }
+
+                //json形式CVE情報を取得する
+                var JsonCveInfo = GetJsonCveInfo(cve);
+                if (String.IsNullOrEmpty(JsonCveInfo))
+                {
+                    workRow[Constants.ColumnName.Remarks] = "404 Not Found";
+                    table.Rows.Add(workRow);
+                    continue;
+                }
+
+                // JSONを.NETのクラスにデシリアライズ
+                SecurityGuidance sg = JsonConvert.DeserializeObject<SecurityGuidance>(JsonCveInfo);
+
+                // TODO：「サービス拒否」の項目はjsonにないのか確認
+
+                // 共通項目のデータを格納する
+                workRow[Constants.ColumnName.CveTitle] = sg.CveTitle;
+                workRow[Constants.ColumnName.Description] = sg.Description.Replace("\n", "");
+                workRow[Constants.ColumnName.PubliclyDisclosed] = sg.PubliclyDisclosed;
+                workRow[Constants.ColumnName.Exploited] = sg.Exploited;
+
+                // 対象とする製品のデータを抽出する
+                var affectedTargetProducts = sg.AffectedProducts.Where(n => n.Name == Constants.ProductName.Win_2008_32Bit_SP2
+                                                               || n.Name == Constants.ProductName.Win_2012_R2_SeverCore
+                                                               || n.Name == Constants.ProductName.Win_2016_ServerCore
+                                                              );
+
+                // targetProductsの有無を判別し、なければ処理終了
+                if (!affectedTargetProducts.Any())
+                {
+                    workRow[Constants.ColumnName.Remarks] = "CVEの対象製品の中に目的の製品が含まれていません";
+                    table.Rows.Add(workRow);
+                    continue;
+                }
+
+                // まとめデータ格納用クラスの初期化
+                AffectedProduct summaryOfTargetProducts = new AffectedProduct();
+
+                // ループに用いる変数を初期化
+                bool isFirst = true;
+                string containsWIN2008 = "☓";
+                string containsWIN2012 = "☓";
+                string containsWIN2016 = "☓";
+
+                // 対象製品データのうち値が同じ項目は一つにまとめる
+                foreach (var affectedTargetProduct in affectedTargetProducts)
+                {
+                    // ＣＶＥの対象製品が以下の製品のどれに該当するかチェックする
+                    if (affectedTargetProduct.Name == Constants.ProductName.Win_2008_32Bit_SP2) { containsWIN2008 = "○"; }
+                    if (affectedTargetProduct.Name == Constants.ProductName.Win_2012_R2_SeverCore) { containsWIN2012 = "○"; }
+                    if (affectedTargetProduct.Name == Constants.ProductName.Win_2016_ServerCore) { containsWIN2016 = "○"; }
+
+                    if (isFirst)
+                    {
+                        summaryOfTargetProducts = affectedTargetProduct;
+                        isFirst = false;
+                        continue;
+                    }
+
+                    if (!summaryOfTargetProducts.VectorString.Equals(affectedTargetProduct.VectorString))
+                    {
+                        summaryOfTargetProducts.VectorString = "vectorStringの中に一致しないものがあります";
+                        Console.WriteLine(summaryOfTargetProducts.VectorString);
+                    }
+
+                    if (!summaryOfTargetProducts.BaseScore.Equals(affectedTargetProduct.BaseScore))
+                    {
+                        summaryOfTargetProducts.BaseScore = 0;
+                        Console.WriteLine("baseScoreの中に一致しないものがあります");
+                    }
+
+                    if (!summaryOfTargetProducts.TemporalScore.Equals(affectedTargetProduct.TemporalScore))
+                    {
+                        summaryOfTargetProducts.TemporalScore = 0;
+                        Console.WriteLine("temporalScoreの中に一致しないものがあります");
+                    }
+
+                    if (!summaryOfTargetProducts.Severity.Equals(affectedTargetProduct.Severity))
+                    {
+                        summaryOfTargetProducts.Severity = "severityの中に一致しないものがあります";
+                        Console.WriteLine("severityの中に一致しないものがあります");
+                    }
+                }
+
+                // tableへのデータ追加用文字列を作成
+                var LatestRelease = sg.ExploitabilityAssessment.LatestReleaseExploitability.Id.ToString() + "-" + sg.ExploitabilityAssessment.LatestReleaseExploitability.Name; // 最新のソフトウェア リリース
+                var OlderRelease = sg.ExploitabilityAssessment.OlderReleaseExploitability.Id.ToString() + "-" + sg.ExploitabilityAssessment.OlderReleaseExploitability.Name; // 過去のソフトウェア リリース
+
+                // 対象製品データのまとめを格納する
+                workRow[Constants.ColumnName.LatestReleaseExploitability] = LatestRelease;
+                workRow[Constants.ColumnName.OlderReleaseExploitability] = OlderRelease;
+                workRow[Constants.ColumnName.VectorString] = summaryOfTargetProducts.VectorString;
+                workRow[Constants.ColumnName.BaseScore] = summaryOfTargetProducts.BaseScore;
+                workRow[Constants.ColumnName.TemporalScore] = summaryOfTargetProducts.TemporalScore;
+                workRow[Constants.ColumnName.Severity] = summaryOfTargetProducts.Severity;
+                workRow[Constants.ProductName.Win_2008_32Bit_SP2] = containsWIN2008;
+                workRow[Constants.ProductName.Win_2012_R2_SeverCore] = containsWIN2012;
+                workRow[Constants.ProductName.Win_2016_ServerCore] = containsWIN2016;
+
+                // Rows.Addメソッドを使ってデータを追加
+                table.Rows.Add(workRow);
             }
 
             Console.WriteLine("tableの中身を表示");
@@ -199,6 +186,22 @@ namespace CVESummaryGenerator
             csv.ConvertDataTableToCsv(table, csvPath, true);
 
             Console.ReadLine();
+        }
+
+        private static string GetJsonCveInfo(string cve)
+        {
+            using (var wc = new WebClient()){
+                wc.Encoding = Encoding.UTF8;
+                try
+                {
+                    // APIからjson形式の文字列を取得
+                    return wc.DownloadString(@"https://portal.msrc.microsoft.com/api/security-guidance/ja-JP/CVE/" + cve);
+                }
+                catch (WebException)
+                {
+                    return null;
+                }
+            }
         }
 
         private static List<string> GetTargetProducts()

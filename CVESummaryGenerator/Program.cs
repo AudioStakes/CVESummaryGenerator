@@ -20,11 +20,8 @@ namespace CVESummaryGenerator
             // まとめ対象CVEを分割してリスト化
             string[] targetCVElist = targetCVEs.Split(' ');
 
-            var targetOSs = new List<string>(){
-                Constants.ProductName.Win_2008_32Bit_SP2,
-                Constants.ProductName.Win_2012_R2_SeverCore,
-                Constants.ProductName.Win_2016_ServerCore
-            };
+            // 対象製品リストを取得
+            var targetProducts = GetTargetProducts();
 
             // まとめデータを格納するテーブルを作成
             DataSet dataSet = new DataSet(); // 表形式のデータをメモリ領域へ格納するクラス
@@ -42,9 +39,9 @@ namespace CVESummaryGenerator
             table.Columns.Add(Constants.ColumnName.BaseScore, Type.GetType("System.Double"));
             table.Columns.Add(Constants.ColumnName.TemporalScore, Type.GetType("System.Double"));
             table.Columns.Add(Constants.ColumnName.Severity);
-            foreach (var product in targetOSs)
+            foreach (var targetProduct in targetProducts)
             {
-                table.Columns.Add(product);
+                table.Columns.Add(targetProduct);
             }
             table.Columns.Add(Constants.ColumnName.Remarks);
 
@@ -101,13 +98,13 @@ namespace CVESummaryGenerator
                     workRow[Constants.ColumnName.Exploited] = sg.Exploited;
 
                     // 対象とする製品のデータを抽出する
-                    var targetProducts = sg.AffectedProducts.Where(n => n.Name == Constants.ProductName.Win_2008_32Bit_SP2
+                    var affectedTargetProducts = sg.AffectedProducts.Where(n => n.Name == Constants.ProductName.Win_2008_32Bit_SP2
                                                                    || n.Name == Constants.ProductName.Win_2012_R2_SeverCore
                                                                    || n.Name == Constants.ProductName.Win_2016_ServerCore
                                                                   );
 
                     // targetProductsの有無を判別し、なければ処理終了
-                    if (!targetProducts.Any())
+                    if (!affectedTargetProducts.Any())
                     {
                         workRow[Constants.ColumnName.Remarks] = "CVEの対象製品の中に目的の製品が含まれていません";
                         table.Rows.Add(workRow);
@@ -124,39 +121,39 @@ namespace CVESummaryGenerator
                     string containsWIN2016 = "☓";
 
                     // 対象製品データのうち値が同じ項目は一つにまとめる
-                    foreach (var product in targetProducts)
+                    foreach (var affectedTargetProduct in affectedTargetProducts)
                     {
                         // ＣＶＥの対象製品が以下の製品のどれに該当するかチェックする
-                        if (product.Name == Constants.ProductName.Win_2008_32Bit_SP2) { containsWIN2008 = "○"; }
-                        if (product.Name == Constants.ProductName.Win_2012_R2_SeverCore) { containsWIN2012 = "○"; }
-                        if (product.Name == Constants.ProductName.Win_2016_ServerCore) { containsWIN2016 = "○"; }
+                        if (affectedTargetProduct.Name == Constants.ProductName.Win_2008_32Bit_SP2) { containsWIN2008 = "○"; }
+                        if (affectedTargetProduct.Name == Constants.ProductName.Win_2012_R2_SeverCore) { containsWIN2012 = "○"; }
+                        if (affectedTargetProduct.Name == Constants.ProductName.Win_2016_ServerCore) { containsWIN2016 = "○"; }
 
                         if (isFirst)
                         {
-                            summaryOfTargetProducts = product;
+                            summaryOfTargetProducts = affectedTargetProduct;
                             isFirst = false;
                             continue;
                         }
 
-                        if (!summaryOfTargetProducts.VectorString.Equals(product.VectorString))
+                        if (!summaryOfTargetProducts.VectorString.Equals(affectedTargetProduct.VectorString))
                         {
                             summaryOfTargetProducts.VectorString = "vectorStringの中に一致しないものがあります";
                             Console.WriteLine(summaryOfTargetProducts.VectorString);
                         }
 
-                        if (!summaryOfTargetProducts.BaseScore.Equals(product.BaseScore))
+                        if (!summaryOfTargetProducts.BaseScore.Equals(affectedTargetProduct.BaseScore))
                         {
                             summaryOfTargetProducts.BaseScore = 0;
                             Console.WriteLine("baseScoreの中に一致しないものがあります");
                         }
 
-                        if (!summaryOfTargetProducts.TemporalScore.Equals(product.TemporalScore))
+                        if (!summaryOfTargetProducts.TemporalScore.Equals(affectedTargetProduct.TemporalScore))
                         {
                             summaryOfTargetProducts.TemporalScore = 0;
                             Console.WriteLine("temporalScoreの中に一致しないものがあります");
                         }
 
-                        if (!summaryOfTargetProducts.Severity.Equals(product.Severity))
+                        if (!summaryOfTargetProducts.Severity.Equals(affectedTargetProduct.Severity))
                         {
                             summaryOfTargetProducts.Severity = "severityの中に一致しないものがあります";
                             Console.WriteLine("severityの中に一致しないものがあります");
@@ -202,6 +199,15 @@ namespace CVESummaryGenerator
             csv.ConvertDataTableToCsv(table, csvPath, true);
 
             Console.ReadLine();
+        }
+
+        private static List<string> GetTargetProducts()
+        {
+            return new List<string>(){
+                Constants.ProductName.Win_2008_32Bit_SP2,
+                Constants.ProductName.Win_2012_R2_SeverCore,
+                Constants.ProductName.Win_2016_ServerCore,
+            };
         }
 
         private static string GetFullPathWithCurrentDirectoryAndCurrentTimeAsCSVFileName()

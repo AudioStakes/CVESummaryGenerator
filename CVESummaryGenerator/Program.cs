@@ -69,6 +69,7 @@ namespace CVESummaryGenerator
                 var JsonCveInfo = GetJsonCveInfo(cve);
                 if (String.IsNullOrEmpty(JsonCveInfo))
                 {
+                    // ＴＯＤＯ：エラーをそのまま出力できるようにメソッドを変更する
                     workRow[Constants.ColumnName.Remarks] = "404 Not Found";
                     table.Rows.Add(workRow);
                     continue;
@@ -80,10 +81,7 @@ namespace CVESummaryGenerator
                 // TODO：「サービス拒否」の項目はjsonにないのか確認
 
                 // 共通項目のデータを格納する
-                workRow[Constants.ColumnName.CveTitle] = sg.CveTitle;
-                workRow[Constants.ColumnName.Description] = sg.Description.Replace("\n", "");
-                workRow[Constants.ColumnName.PubliclyDisclosed] = sg.PubliclyDisclosed;
-                workRow[Constants.ColumnName.Exploited] = sg.Exploited;
+                SetCommonCveValueToWorkRow(workRow, sg);
 
                 // 対象とする製品のデータを抽出する
                 var affectedTargetProducts = sg.AffectedProducts.Where(n => n.Name == Constants.ProductName.Win_2008_32Bit_SP2
@@ -186,6 +184,14 @@ namespace CVESummaryGenerator
             csv.ConvertDataTableToCsv(table, csvPath, true);
 
             Console.ReadLine();
+        }
+
+        private static void SetCommonCveValueToWorkRow(DataRow workRow, SecurityGuidance sg)
+        {
+            workRow[Constants.ColumnName.CveTitle] = sg.CveTitle;
+            workRow[Constants.ColumnName.Description] = sg.Description.Replace("\n", "");
+            workRow[Constants.ColumnName.PubliclyDisclosed] = sg.PubliclyDisclosed;
+            workRow[Constants.ColumnName.Exploited] = sg.Exploited;
         }
 
         private static string GetJsonCveInfo(string cve)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
@@ -102,17 +103,15 @@ namespace CVESummaryGenerator
 
                 // ループに用いる変数を初期化
                 bool isFirst = true;
-                string containsWIN2008 = "☓";
-                string containsWIN2012 = "☓";
-                string containsWIN2016 = "☓";
+
+                // 対象製品を有無を表すハッシュテーブルを作成する
+                Hashtable TargetProductPresenceHashTable = CreateTargetProductPresenceHashTable(targetProducts);
 
                 // 対象製品データのうち値が同じ項目は一つにまとめる
                 foreach (var affectedTargetProduct in affectedTargetProducts)
                 {
-                    // ＣＶＥの対象製品が以下の製品のどれに該当するかチェックする
-                    if (affectedTargetProduct.Name == Constants.ProductName.Win_2008_32Bit_SP2) { containsWIN2008 = "○"; }
-                    if (affectedTargetProduct.Name == Constants.ProductName.Win_2012_R2_SeverCore) { containsWIN2012 = "○"; }
-                    if (affectedTargetProduct.Name == Constants.ProductName.Win_2016_ServerCore) { containsWIN2016 = "○"; }
+                    // ＣＶＥの影響対象製品と一致する目的製品を確認する
+                    CheckIfEqualToProductName(affectedTargetProduct.Name, TargetProductPresenceHashTable);
 
                     if (isFirst)
                     {
@@ -157,9 +156,10 @@ namespace CVESummaryGenerator
                 workRow[Constants.ColumnName.BaseScore] = summaryOfTargetProducts.BaseScore;
                 workRow[Constants.ColumnName.TemporalScore] = summaryOfTargetProducts.TemporalScore;
                 workRow[Constants.ColumnName.Severity] = summaryOfTargetProducts.Severity;
-                workRow[Constants.ProductName.Win_2008_32Bit_SP2] = containsWIN2008;
-                workRow[Constants.ProductName.Win_2012_R2_SeverCore] = containsWIN2012;
-                workRow[Constants.ProductName.Win_2016_ServerCore] = containsWIN2016;
+                foreach (string targetProductName in TargetProductPresenceHashTable.Keys)
+                {
+                    workRow[targetProductName] = TargetProductPresenceHashTable[targetProductName];
+                }
 
                 // Rows.Addメソッドを使ってデータを追加
                 table.Rows.Add(workRow);
@@ -184,6 +184,28 @@ namespace CVESummaryGenerator
             csv.ConvertDataTableToCsv(table, csvPath, true);
 
             Console.ReadLine();
+        }
+
+        private static void CheckIfEqualToProductName(string affectedTargetProductName, Hashtable targetProductPresenceHashTable)
+        {
+            ArrayList targetProductNameList = new ArrayList(targetProductPresenceHashTable.Keys);
+            foreach (string targetProductName in targetProductNameList)
+            {
+                if (affectedTargetProductName == targetProductName)
+                {
+                    targetProductPresenceHashTable[targetProductName] = "○";
+                }
+            }
+        }
+
+        private static Hashtable CreateTargetProductPresenceHashTable(List<string> targetProducts)
+        {
+            Hashtable TargetProductPresenceHashTable = new Hashtable();
+            foreach (var targetProduct in targetProducts)
+            {
+                TargetProductPresenceHashTable.Add(targetProduct, "x");
+            }
+            return TargetProductPresenceHashTable;
         }
 
         private static void SetCommonCveValueToWorkRow(DataRow workRow, SecurityGuidance sg)

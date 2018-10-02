@@ -85,10 +85,11 @@ namespace CVESummaryGenerator
                 SetCommonCveValueToWorkRow(workRow, sg);
 
                 // 対象とする製品のデータを抽出する
-                var affectedTargetProducts = sg.AffectedProducts.Where(n => n.Name == Constants.ProductName.Win_2008_32Bit_SP2
-                                                               || n.Name == Constants.ProductName.Win_2012_R2_SeverCore
-                                                               || n.Name == Constants.ProductName.Win_2016_ServerCore
-                                                              );
+                var affectedTargetProducts = sg.AffectedProducts.Where(n => 
+                    n.Name == Constants.ProductName.Win_2008_32Bit_SP2
+                    || n.Name == Constants.ProductName.Win_2012_R2_SeverCore
+                    || n.Name == Constants.ProductName.Win_2016_ServerCore
+                    );
 
                 // targetProductsの有無を判別し、なければ処理終了
                 if (!affectedTargetProducts.Any())
@@ -115,33 +116,15 @@ namespace CVESummaryGenerator
 
                     if (isFirst)
                     {
+                        // １番目のデータは丸ごと代入する
                         summaryOfTargetProducts = affectedTargetProduct;
                         isFirst = false;
                         continue;
                     }
-
-                    if (!summaryOfTargetProducts.VectorString.Equals(affectedTargetProduct.VectorString))
+                    else
                     {
-                        summaryOfTargetProducts.VectorString = "vectorStringの中に一致しないものがあります";
-                        Console.WriteLine(summaryOfTargetProducts.VectorString);
-                    }
-
-                    if (!summaryOfTargetProducts.BaseScore.Equals(affectedTargetProduct.BaseScore))
-                    {
-                        summaryOfTargetProducts.BaseScore = 0;
-                        Console.WriteLine("baseScoreの中に一致しないものがあります");
-                    }
-
-                    if (!summaryOfTargetProducts.TemporalScore.Equals(affectedTargetProduct.TemporalScore))
-                    {
-                        summaryOfTargetProducts.TemporalScore = 0;
-                        Console.WriteLine("temporalScoreの中に一致しないものがあります");
-                    }
-
-                    if (!summaryOfTargetProducts.Severity.Equals(affectedTargetProduct.Severity))
-                    {
-                        summaryOfTargetProducts.Severity = "severityの中に一致しないものがあります";
-                        Console.WriteLine("severityの中に一致しないものがあります");
+                        // ２番目以降のデータは１番目と一致するか確認する
+                        CheckIfEqualToAssignedData(summaryOfTargetProducts, affectedTargetProduct);
                     }
                 }
 
@@ -184,6 +167,33 @@ namespace CVESummaryGenerator
             csv.ConvertDataTableToCsv(table, csvPath, true);
 
             Console.ReadLine();
+        }
+
+        private static void CheckIfEqualToAssignedData(AffectedProduct summaryOfTargetProducts, AffectedProduct affectedTargetProduct)
+        {
+            if (!summaryOfTargetProducts.VectorString.Equals(affectedTargetProduct.VectorString))
+            {
+                summaryOfTargetProducts.VectorString = default(string);
+                Console.WriteLine("対象製品のVectorStringに一致しない値があります");
+            }
+
+            if (!summaryOfTargetProducts.BaseScore.Equals(affectedTargetProduct.BaseScore))
+            {
+                summaryOfTargetProducts.BaseScore = default(double);
+                Console.WriteLine("対象製品のBaseScoreに一致しない値があります");
+            }
+
+            if (!summaryOfTargetProducts.TemporalScore.Equals(affectedTargetProduct.TemporalScore))
+            {
+                summaryOfTargetProducts.TemporalScore = default(double);
+                Console.WriteLine("対象製品のTemporalScoreに一致しない値があります");
+            }
+
+            if (!summaryOfTargetProducts.Severity.Equals(affectedTargetProduct.Severity))
+            {
+                summaryOfTargetProducts.Severity = default(string);
+                Console.WriteLine("対象製品のSeverityの中に一致しないものがあります");
+            }
         }
 
         private static void CheckIfEqualToProductName(string affectedTargetProductName, Hashtable targetProductPresenceHashTable)

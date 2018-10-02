@@ -8,14 +8,15 @@ namespace CVESummaryGenerator
             public static readonly string CveNumber = "CVE";
             public static readonly string CveTitle = "概要";
             public static readonly string Description = "詳細";
+            public static readonly string Severity = "深刻度";
             public static readonly string PubliclyDisclosed = "一般に公開";
             public static readonly string Exploited = "悪用";
             public static readonly string LatestReleaseExploitability = "最新のソフトウェア リリース";
             public static readonly string OlderReleaseExploitability = "過去のソフトウェア リリース";
+            public static readonly string DenialOfService = "サービス拒否";
             public static readonly string VectorString = "CVSS";
-            public static readonly string BaseScore = "BaseScore";
-            public static readonly string TemporalScore = "TemporalScore";
-            public static readonly string Severity = "深刻度";
+            public static readonly string BaseScore = "基本値";
+            public static readonly string TemporalScore = "現状値";
             public static readonly string Remarks = "備考";
         }
 

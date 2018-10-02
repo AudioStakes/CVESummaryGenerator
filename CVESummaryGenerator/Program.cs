@@ -106,13 +106,13 @@ namespace CVESummaryGenerator
                 bool isFirst = true;
 
                 // 対象製品を有無を表すハッシュテーブルを作成する
-                Hashtable TargetProductPresenceHashTable = CreateTargetProductPresenceHashTable(targetProducts);
+                Hashtable TableRepresentingPresenceOfTargetProduct = CreateTableRepresentingPresenceOfTargetProduct(targetProducts);
 
                 // 対象製品データのうち値が同じ項目は一つにまとめる
                 foreach (var affectedTargetProduct in affectedTargetProducts)
                 {
                     // ＣＶＥの影響対象製品と一致する目的製品を確認する
-                    CheckIfEqualToProductName(affectedTargetProduct.Name, TargetProductPresenceHashTable);
+                    CheckIfEqualToProductName(affectedTargetProduct.Name, TableRepresentingPresenceOfTargetProduct);
 
                     if (isFirst)
                     {
@@ -139,9 +139,9 @@ namespace CVESummaryGenerator
                 workRow[Constants.ColumnName.BaseScore] = summaryOfTargetProducts.BaseScore;
                 workRow[Constants.ColumnName.TemporalScore] = summaryOfTargetProducts.TemporalScore;
                 workRow[Constants.ColumnName.Severity] = summaryOfTargetProducts.Severity;
-                foreach (string targetProductName in TargetProductPresenceHashTable.Keys)
+                foreach (string targetProductName in TableRepresentingPresenceOfTargetProduct.Keys)
                 {
-                    workRow[targetProductName] = TargetProductPresenceHashTable[targetProductName];
+                    workRow[targetProductName] = TableRepresentingPresenceOfTargetProduct[targetProductName];
                 }
 
                 // Rows.Addメソッドを使ってデータを追加
@@ -196,26 +196,26 @@ namespace CVESummaryGenerator
             }
         }
 
-        private static void CheckIfEqualToProductName(string affectedTargetProductName, Hashtable targetProductPresenceHashTable)
+        private static void CheckIfEqualToProductName(string affectedTargetProductName, Hashtable tableRepresentingPresenceOfTargetProduct)
         {
-            ArrayList targetProductNameList = new ArrayList(targetProductPresenceHashTable.Keys);
+            ArrayList targetProductNameList = new ArrayList(tableRepresentingPresenceOfTargetProduct.Keys);
             foreach (string targetProductName in targetProductNameList)
             {
                 if (affectedTargetProductName == targetProductName)
                 {
-                    targetProductPresenceHashTable[targetProductName] = "○";
+                    tableRepresentingPresenceOfTargetProduct[targetProductName] = "○";
                 }
             }
         }
 
-        private static Hashtable CreateTargetProductPresenceHashTable(List<string> targetProducts)
+        private static Hashtable CreateTableRepresentingPresenceOfTargetProduct(List<string> targetProducts)
         {
-            Hashtable TargetProductPresenceHashTable = new Hashtable();
+            Hashtable TableRepresentingPresenceOfTargetProduct = new Hashtable();
             foreach (var targetProduct in targetProducts)
             {
-                TargetProductPresenceHashTable.Add(targetProduct, "x");
+                TableRepresentingPresenceOfTargetProduct.Add(targetProduct, "x");
             }
-            return TargetProductPresenceHashTable;
+            return TableRepresentingPresenceOfTargetProduct;
         }
 
         private static void SetCommonCveValueToWorkRow(DataRow workRow, SecurityGuidance sg)

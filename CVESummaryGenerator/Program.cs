@@ -145,9 +145,6 @@ namespace CVESummaryGenerator
                     workRow[targetProductName] = TableRepresentingPresenceOfTargetProduct[targetProductName];
                 }
 
-                // ＴＯＤＯ：詳細の内容を取得して<p>を削除、</p>をEnvironment.NewLine（↓使用例）に変換する。
-                // "おはよう。" + Environment.NewLine + "こんにちは。"
-
                 // Rows.Addメソッドを使ってデータを追加
                 table.Rows.Add(workRow);
             }
@@ -225,7 +222,9 @@ namespace CVESummaryGenerator
         private static void SetCommonCveValueToWorkRow(DataRow workRow, SecurityGuidance sg)
         {
             workRow[Constants.ColumnName.CveTitle] = sg.CveTitle;
-            workRow[Constants.ColumnName.Description] = sg.Description.Replace("\n", "");
+            workRow[Constants.ColumnName.Description] = sg.Description
+                .Replace("<p>", "")
+                .Replace("</p>", Environment.NewLine);
             workRow[Constants.ColumnName.PubliclyDisclosed] = sg.PubliclyDisclosed;
             workRow[Constants.ColumnName.Exploited] = sg.Exploited;
         }

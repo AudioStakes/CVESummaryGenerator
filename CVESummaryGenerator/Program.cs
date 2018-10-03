@@ -145,6 +145,9 @@ namespace CVESummaryGenerator
                     workRow[targetProductName] = TableRepresentingPresenceOfTargetProduct[targetProductName];
                 }
 
+                // ＴＯＤＯ：詳細の内容を取得して<p>を削除、</p>をEnvironment.NewLine（↓使用例）に変換する。
+                // "おはよう。" + Environment.NewLine + "こんにちは。"
+
                 // Rows.Addメソッドを使ってデータを追加
                 table.Rows.Add(workRow);
             }

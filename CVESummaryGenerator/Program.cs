@@ -24,36 +24,83 @@ namespace CVESummaryGenerator
             // 対象製品リストを取得
             var targetProducts = GetTargetProducts();
 
-            // まとめデータを格納するテーブルを作成
-            DataSet dataSet = new DataSet(); // 表形式のデータをメモリ領域へ格納するクラス
-            DataTable table = new DataTable("SummaryTable"); // 表形式のデータを扱う
+            // メモリ上のデータベースを作成
+            DataSet dataSet = new DataSet();
 
-            // テーブルにカラム名の追加
-            table.Columns.Add(Constants.ColumnName.CveNumber);
-            table.Columns.Add(Constants.ColumnName.CveTitle);
-            table.Columns.Add(Constants.ColumnName.Description);
-            table.Columns.Add(Constants.ColumnName.Severity);
-            table.Columns.Add(Constants.ColumnName.PubliclyDisclosed);
-            table.Columns.Add(Constants.ColumnName.Exploited);
-            table.Columns.Add(Constants.ColumnName.LatestReleaseExploitability);
-            table.Columns.Add(Constants.ColumnName.OlderReleaseExploitability);
-            table.Columns.Add(Constants.ColumnName.DenialOfService);
-            table.Columns.Add(Constants.ColumnName.VectorString);
-            table.Columns.Add(Constants.ColumnName.BaseScore, Type.GetType("System.Double"));
-            table.Columns.Add(Constants.ColumnName.TemporalScore, Type.GetType("System.Double"));
+            // まとめデータを扱うテーブルを作成
+            DataTable summaryTable = new DataTable("SummaryTable");
+
+            // まとめテーブルにカラム名の追加
+            summaryTable.Columns.Add(Constants.ColumnName.CveNumber);
+            summaryTable.Columns.Add(Constants.ColumnName.CveTitle);
+            summaryTable.Columns.Add(Constants.ColumnName.Description);
+            summaryTable.Columns.Add(Constants.ColumnName.Severity);
+            summaryTable.Columns.Add(Constants.ColumnName.PubliclyDisclosed);
+            summaryTable.Columns.Add(Constants.ColumnName.Exploited);
+            summaryTable.Columns.Add(Constants.ColumnName.LatestReleaseExploitability);
+            summaryTable.Columns.Add(Constants.ColumnName.OlderReleaseExploitability);
+            summaryTable.Columns.Add(Constants.ColumnName.DenialOfService);
+            summaryTable.Columns.Add(Constants.ColumnName.VectorString);
+            summaryTable.Columns.Add(Constants.ColumnName.BaseScore, Type.GetType("System.Double"));
+            summaryTable.Columns.Add(Constants.ColumnName.TemporalScore, Type.GetType("System.Double"));
             foreach (var targetProduct in targetProducts)
             {
-                table.Columns.Add(targetProduct);
+                summaryTable.Columns.Add(targetProduct);
             }
-            table.Columns.Add(Constants.ColumnName.Remarks);
+            summaryTable.Columns.Add(Constants.ColumnName.Remarks);
 
-            // DataSetにDataTableを追加
-            dataSet.Tables.Add(table);
+            // ＤＢにまとめテーブルを追加
+            dataSet.Tables.Add(summaryTable);
+
+            // 影響対象製品のデータを扱うテーブルを作成
+            DataTable affectedTargetProductsTable = new DataTable("AffectedTargetProducts");
+
+            // 影響対象製品のデータを扱うテーブルにカラム名の追加
+            affectedTargetProductsTable.Columns.Add("Name");
+            affectedTargetProductsTable.Columns.Add("Platform");
+            affectedTargetProductsTable.Columns.Add("ImpactId");
+            affectedTargetProductsTable.Columns.Add("Impact");
+            affectedTargetProductsTable.Columns.Add("SeverityId");
+            affectedTargetProductsTable.Columns.Add("Severity");
+            affectedTargetProductsTable.Columns.Add("BaseScore");
+            affectedTargetProductsTable.Columns.Add("TemporalScore");
+            affectedTargetProductsTable.Columns.Add("EnvironmentScore");
+            affectedTargetProductsTable.Columns.Add("VectorString");
+            affectedTargetProductsTable.Columns.Add("Supersedence");
+            affectedTargetProductsTable.Columns.Add("KnowledgeBaseId");
+            affectedTargetProductsTable.Columns.Add("KnowledgeBaseUrl");
+            affectedTargetProductsTable.Columns.Add("MonthlyKnowledgeBaseId");
+            affectedTargetProductsTable.Columns.Add("MonthlyKnowledgeBaseUrl");
+            affectedTargetProductsTable.Columns.Add("DownloadUrl");
+            affectedTargetProductsTable.Columns.Add("DownloadTitle");
+            affectedTargetProductsTable.Columns.Add("MonthlyDownloadUrl");
+            affectedTargetProductsTable.Columns.Add("MonthlyDownloadTitle");
+            affectedTargetProductsTable.Columns.Add("ArticleTitle1");
+            affectedTargetProductsTable.Columns.Add("ArticleUrl1");
+            affectedTargetProductsTable.Columns.Add("DownloadTitle1");
+            affectedTargetProductsTable.Columns.Add("DownloadUrl1");
+            affectedTargetProductsTable.Columns.Add("DoesRowOneHaveAtLeastOneArticleOrUrl");
+            affectedTargetProductsTable.Columns.Add("ArticleTitle2");
+            affectedTargetProductsTable.Columns.Add("ArticleUrl2");
+            affectedTargetProductsTable.Columns.Add("DownloadTitle2");
+            affectedTargetProductsTable.Columns.Add("DownloadUrl2");
+            affectedTargetProductsTable.Columns.Add("DoesRowTwoHaveAtLeastOneArticleOrUrl");
+            affectedTargetProductsTable.Columns.Add("ArticleTitle3");
+            affectedTargetProductsTable.Columns.Add("ArticleUrl3");
+            affectedTargetProductsTable.Columns.Add("DownloadTitle3");
+            affectedTargetProductsTable.Columns.Add("DownloadUrl3");
+            affectedTargetProductsTable.Columns.Add("DoesRowThreeHaveAtLeastOneArticleOrUrl");
+            affectedTargetProductsTable.Columns.Add("ArticleTitle4");
+            affectedTargetProductsTable.Columns.Add("ArticleUrl4");
+            affectedTargetProductsTable.Columns.Add("DownloadTitle4");
+            affectedTargetProductsTable.Columns.Add("DownloadUrl4");
+            affectedTargetProductsTable.Columns.Add("DoesRowFourHaveAtLeastOneArticleOrUrl");
+            affectedTargetProductsTable.Columns.Add("CountOfRowsWithAtLeastOneArticleOrUrl");
 
             foreach (var cve in targetCVElist)
             {
                 // CVEに対応する行を作成
-                DataRow workRow = table.NewRow();
+                DataRow workRow = summaryTable.NewRow();
 
                 // CVENumberを格納
                 workRow[Constants.ColumnName.CveNumber] = cve;
@@ -63,7 +110,7 @@ namespace CVESummaryGenerator
                 if (!Regex.IsMatch(cve, @"^(CVE-20[0-9][0-9]-\d{4}$|^ADV\d{6}$)"))
                 {
                     workRow[Constants.ColumnName.Remarks] = "CVEの正規表現と一致しません";
-                    table.Rows.Add(workRow);
+                    summaryTable.Rows.Add(workRow);
                     continue;
                 }
 
@@ -73,7 +120,7 @@ namespace CVESummaryGenerator
                 {
                     // ＴＯＤＯ：エラーをそのまま出力できるようにメソッドを変更する
                     workRow[Constants.ColumnName.Remarks] = "404 Not Found";
-                    table.Rows.Add(workRow);
+                    summaryTable.Rows.Add(workRow);
                     continue;
                 }
 
@@ -96,7 +143,7 @@ namespace CVESummaryGenerator
                 if (!affectedTargetProducts.Any())
                 {
                     workRow[Constants.ColumnName.Remarks] = "CVEの対象製品の中に目的の製品が含まれていません";
-                    table.Rows.Add(workRow);
+                    summaryTable.Rows.Add(workRow);
                     continue;
                 }
 
@@ -112,6 +159,15 @@ namespace CVESummaryGenerator
                 // 対象製品データのうち値が同じ項目は一つにまとめる
                 foreach (var affectedTargetProduct in affectedTargetProducts)
                 {
+                    // affectedTargetProductに対応する行を作成
+                    DataRow affectedTargetProductRow = affectedTargetProductsTable.NewRow();
+
+                    // affectedTargetProductの値を行へセット
+                    SetAffectedTargetProductValuesToRow(affectedTargetProduct, affectedTargetProductRow);
+
+                    // Rows.Addメソッドを使ってデータを追加
+                    affectedTargetProductsTable.Rows.Add(affectedTargetProductRow);
+
                     // ＣＶＥの影響対象製品と一致する目的製品を確認する
                     CheckIfEqualToProductName(affectedTargetProduct.Name, TableRepresentingPresenceOfTargetProduct);
 
@@ -149,17 +205,17 @@ namespace CVESummaryGenerator
                 }
 
                 // Rows.Addメソッドを使ってデータを追加
-                table.Rows.Add(workRow);
+                summaryTable.Rows.Add(workRow);
             }
 
             Console.WriteLine("tableの中身を表示");
-            foreach (DataRow Row in table.Rows)
-            {
-                for (int i = 0; i < Row.ItemArray.Length; i++)
-                {
-                    Console.WriteLine(Row[i].ToString() + "|");
-                }
-            }
+            //foreach (DataRow Row in summaryTable.Rows)
+            //{
+            //    for (int i = 0; i < Row.ItemArray.Length; i++)
+            //    {
+            //        Console.WriteLine(Row[i].ToString() + "|");
+            //    }
+            //}
 
             // ＣＳＶファイル保存先の完全パスを取得
             string csvPath = GetFullPathWithCurrentDirectoryAndCurrentTimeAsCSVFileName();
@@ -168,9 +224,54 @@ namespace CVESummaryGenerator
             DatatableToCSVConverter csv = new DatatableToCSVConverter();
 
             // DataTableをCSVで保存する
-            csv.ConvertDataTableToCsv(table, csvPath, true);
+            csv.ConvertDataTableToCsv(summaryTable, csvPath, true);
+            csv.ConvertDataTableToCsv(affectedTargetProductsTable, csvPath + "_affectedTargetProducts.csv", true);
 
             Console.ReadLine();
+        }
+
+        private static void SetAffectedTargetProductValuesToRow(AffectedProduct affectedTargetProduct, DataRow affectedTargetProductRow)
+        {
+            affectedTargetProductRow["Name"] = affectedTargetProduct.Name;
+            affectedTargetProductRow["Platform"] = affectedTargetProduct.Platform;
+            affectedTargetProductRow["ImpactId"] = affectedTargetProduct.ImpactId;
+            affectedTargetProductRow["Impact"] = affectedTargetProduct.Impact;
+            affectedTargetProductRow["SeverityId"] = affectedTargetProduct.SeverityId;
+            affectedTargetProductRow["Severity"] = affectedTargetProduct.Severity;
+            affectedTargetProductRow["BaseScore"] = affectedTargetProduct.BaseScore;
+            affectedTargetProductRow["TemporalScore"] = affectedTargetProduct.TemporalScore;
+            affectedTargetProductRow["EnvironmentScore"] = affectedTargetProduct.EnvironmentScore;
+            affectedTargetProductRow["VectorString"] = affectedTargetProduct.VectorString;
+            affectedTargetProductRow["Supersedence"] = affectedTargetProduct.Supersedence;
+            affectedTargetProductRow["KnowledgeBaseId"] = affectedTargetProduct.KnowledgeBaseId;
+            affectedTargetProductRow["KnowledgeBaseUrl"] = affectedTargetProduct.KnowledgeBaseUrl;
+            affectedTargetProductRow["MonthlyKnowledgeBaseId"] = affectedTargetProduct.MonthlyKnowledgeBaseId;
+            affectedTargetProductRow["MonthlyKnowledgeBaseUrl"] = affectedTargetProduct.MonthlyKnowledgeBaseUrl;
+            affectedTargetProductRow["DownloadUrl"] = affectedTargetProduct.DownloadUrl;
+            affectedTargetProductRow["DownloadTitle"] = affectedTargetProduct.DownloadTitle;
+            affectedTargetProductRow["MonthlyDownloadUrl"] = affectedTargetProduct.MonthlyDownloadUrl;
+            affectedTargetProductRow["MonthlyDownloadTitle"] = affectedTargetProduct.MonthlyDownloadTitle;
+            affectedTargetProductRow["ArticleTitle1"] = affectedTargetProduct.ArticleTitle1;
+            affectedTargetProductRow["ArticleUrl1"] = affectedTargetProduct.ArticleUrl1;
+            affectedTargetProductRow["DownloadTitle1"] = affectedTargetProduct.DownloadTitle1;
+            affectedTargetProductRow["DownloadUrl1"] = affectedTargetProduct.DownloadUrl1;
+            affectedTargetProductRow["DoesRowOneHaveAtLeastOneArticleOrUrl"] = affectedTargetProduct.DoesRowOneHaveAtLeastOneArticleOrUrl;
+            affectedTargetProductRow["ArticleTitle2"] = affectedTargetProduct.ArticleTitle2;
+            affectedTargetProductRow["ArticleUrl2"] = affectedTargetProduct.ArticleUrl2;
+            affectedTargetProductRow["DownloadTitle2"] = affectedTargetProduct.DownloadTitle2;
+            affectedTargetProductRow["DownloadUrl2"] = affectedTargetProduct.DownloadUrl2;
+            affectedTargetProductRow["DoesRowTwoHaveAtLeastOneArticleOrUrl"] = affectedTargetProduct.DoesRowTwoHaveAtLeastOneArticleOrUrl;
+            affectedTargetProductRow["ArticleTitle3"] = affectedTargetProduct.ArticleTitle3;
+            affectedTargetProductRow["ArticleUrl3"] = affectedTargetProduct.ArticleUrl3;
+            affectedTargetProductRow["DownloadTitle3"] = affectedTargetProduct.DownloadTitle3;
+            affectedTargetProductRow["DownloadUrl3"] = affectedTargetProduct.DownloadUrl3;
+            affectedTargetProductRow["DoesRowThreeHaveAtLeastOneArticleOrUrl"] = affectedTargetProduct.DoesRowThreeHaveAtLeastOneArticleOrUrl;
+            affectedTargetProductRow["ArticleTitle4"] = affectedTargetProduct.ArticleTitle4;
+            affectedTargetProductRow["ArticleUrl4"] = affectedTargetProduct.ArticleUrl4;
+            affectedTargetProductRow["DownloadTitle4"] = affectedTargetProduct.DownloadTitle4;
+            affectedTargetProductRow["DownloadUrl4"] = affectedTargetProduct.DownloadUrl4;
+            affectedTargetProductRow["DoesRowFourHaveAtLeastOneArticleOrUrl"] = affectedTargetProduct.DoesRowFourHaveAtLeastOneArticleOrUrl;
+            affectedTargetProductRow["CountOfRowsWithAtLeastOneArticleOrUrl"] = affectedTargetProduct.CountOfRowsWithAtLeastOneArticleOrUrl;
         }
 
         private static void CheckIfEqualToAssignedData(AffectedProduct summaryOfTargetProducts, AffectedProduct affectedTargetProduct)

@@ -3,7 +3,7 @@ namespace CVESummaryGenerator
 {
     public static class Constants
     {
-        public static class ColumnName
+        public static class SummaryTableColumn
         {
             public static readonly string CveNumber = "CVE";
             public static readonly string CveTitle = "概要";

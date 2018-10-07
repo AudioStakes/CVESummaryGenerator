@@ -31,23 +31,23 @@ namespace CVESummaryGenerator
             DataTable summaryTable = new DataTable("SummaryTable");
 
             // まとめテーブルにカラム名の追加
-            summaryTable.Columns.Add(Constants.ColumnName.CveNumber);
-            summaryTable.Columns.Add(Constants.ColumnName.CveTitle);
-            summaryTable.Columns.Add(Constants.ColumnName.Description);
-            summaryTable.Columns.Add(Constants.ColumnName.Severity);
-            summaryTable.Columns.Add(Constants.ColumnName.PubliclyDisclosed);
-            summaryTable.Columns.Add(Constants.ColumnName.Exploited);
-            summaryTable.Columns.Add(Constants.ColumnName.LatestReleaseExploitability);
-            summaryTable.Columns.Add(Constants.ColumnName.OlderReleaseExploitability);
-            summaryTable.Columns.Add(Constants.ColumnName.DenialOfService);
-            summaryTable.Columns.Add(Constants.ColumnName.VectorString);
-            summaryTable.Columns.Add(Constants.ColumnName.BaseScore, Type.GetType("System.Double"));
-            summaryTable.Columns.Add(Constants.ColumnName.TemporalScore, Type.GetType("System.Double"));
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.CveNumber);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.CveTitle);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.Description);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.Severity);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.PubliclyDisclosed);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.Exploited);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.LatestReleaseExploitability);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.OlderReleaseExploitability);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.DenialOfService);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.VectorString);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.BaseScore, Type.GetType("System.Double"));
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.TemporalScore, Type.GetType("System.Double"));
             foreach (var targetProduct in targetProducts)
             {
                 summaryTable.Columns.Add(targetProduct);
             }
-            summaryTable.Columns.Add(Constants.ColumnName.Remarks);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.Remarks);
 
             // ＤＢにまとめテーブルを追加
             dataSet.Tables.Add(summaryTable);
@@ -56,6 +56,7 @@ namespace CVESummaryGenerator
             DataTable affectedTargetProductsTable = new DataTable("AffectedTargetProducts");
 
             // 影響対象製品のデータを扱うテーブルにカラム名の追加
+            affectedTargetProductsTable.Columns.Add("CVENumber");
             affectedTargetProductsTable.Columns.Add("Name");
             affectedTargetProductsTable.Columns.Add("Platform");
             affectedTargetProductsTable.Columns.Add("ImpactId");
@@ -103,13 +104,13 @@ namespace CVESummaryGenerator
                 DataRow workRow = summaryTable.NewRow();
 
                 // CVENumberを格納
-                workRow[Constants.ColumnName.CveNumber] = cve;
+                workRow[Constants.SummaryTableColumn.CveNumber] = cve;
                 Console.WriteLine(cve);
 
                 // 正規表現とマッチするかチェックする
                 if (!Regex.IsMatch(cve, @"^(CVE-20[0-9][0-9]-\d{4}$|^ADV\d{6}$)"))
                 {
-                    workRow[Constants.ColumnName.Remarks] = "CVEの正規表現と一致しません";
+                    workRow[Constants.SummaryTableColumn.Remarks] = "CVEの正規表現と一致しません";
                     summaryTable.Rows.Add(workRow);
                     continue;
                 }
@@ -119,7 +120,7 @@ namespace CVESummaryGenerator
                 if (String.IsNullOrEmpty(JsonCveInfo))
                 {
                     // ＴＯＤＯ：エラーをそのまま出力できるようにメソッドを変更する
-                    workRow[Constants.ColumnName.Remarks] = "404 Not Found";
+                    workRow[Constants.SummaryTableColumn.Remarks] = "404 Not Found";
                     summaryTable.Rows.Add(workRow);
                     continue;
                 }
@@ -142,7 +143,7 @@ namespace CVESummaryGenerator
                 // targetProductsの有無を判別し、なければ処理終了
                 if (!affectedTargetProducts.Any())
                 {
-                    workRow[Constants.ColumnName.Remarks] = "CVEの対象製品の中に目的の製品が含まれていません";
+                    workRow[Constants.SummaryTableColumn.Remarks] = "CVEの対象製品の中に目的の製品が含まれていません";
                     summaryTable.Rows.Add(workRow);
                     continue;
                 }
@@ -161,6 +162,9 @@ namespace CVESummaryGenerator
                 {
                     // affectedTargetProductに対応する行を作成
                     DataRow affectedTargetProductRow = affectedTargetProductsTable.NewRow();
+
+                    // CVENumberを格納
+                    affectedTargetProductRow["CveNumber"] = cve;
 
                     // affectedTargetProductの値を行へセット
                     SetAffectedTargetProductValuesToRow(affectedTargetProduct, affectedTargetProductRow);
@@ -193,12 +197,12 @@ namespace CVESummaryGenerator
                 var OlderRelease = sg.ExploitabilityAssessment.OlderReleaseExploitability.Id.ToString() + "-" + sg.ExploitabilityAssessment.OlderReleaseExploitability.Name; // 過去のソフトウェア リリース
 
                 // 対象製品データのまとめを格納する
-                workRow[Constants.ColumnName.LatestReleaseExploitability] = LatestRelease;
-                workRow[Constants.ColumnName.OlderReleaseExploitability] = OlderRelease;
-                workRow[Constants.ColumnName.VectorString] = summaryOfTargetProducts.VectorString;
-                workRow[Constants.ColumnName.BaseScore] = summaryOfTargetProducts.BaseScore;
-                workRow[Constants.ColumnName.TemporalScore] = summaryOfTargetProducts.TemporalScore;
-                workRow[Constants.ColumnName.Severity] = summaryOfTargetProducts.Severity;
+                workRow[Constants.SummaryTableColumn.LatestReleaseExploitability] = LatestRelease;
+                workRow[Constants.SummaryTableColumn.OlderReleaseExploitability] = OlderRelease;
+                workRow[Constants.SummaryTableColumn.VectorString] = summaryOfTargetProducts.VectorString;
+                workRow[Constants.SummaryTableColumn.BaseScore] = summaryOfTargetProducts.BaseScore;
+                workRow[Constants.SummaryTableColumn.TemporalScore] = summaryOfTargetProducts.TemporalScore;
+                workRow[Constants.SummaryTableColumn.Severity] = summaryOfTargetProducts.Severity;
                 foreach (string targetProductName in TableRepresentingPresenceOfTargetProduct.Keys)
                 {
                     workRow[targetProductName] = TableRepresentingPresenceOfTargetProduct[targetProductName];
@@ -325,12 +329,12 @@ namespace CVESummaryGenerator
 
         private static void SetCommonCveValueToWorkRow(DataRow workRow, SecurityGuidance sg)
         {
-            workRow[Constants.ColumnName.CveTitle] = sg.CveTitle;
-            workRow[Constants.ColumnName.Description] = sg.Description
+            workRow[Constants.SummaryTableColumn.CveTitle] = sg.CveTitle;
+            workRow[Constants.SummaryTableColumn.Description] = sg.Description
                 .Replace("<p>", "")
                 .Replace("</p>", Environment.NewLine);
-            workRow[Constants.ColumnName.PubliclyDisclosed] = sg.PubliclyDisclosed;
-            workRow[Constants.ColumnName.Exploited] = sg.Exploited;
+            workRow[Constants.SummaryTableColumn.PubliclyDisclosed] = sg.PubliclyDisclosed;
+            workRow[Constants.SummaryTableColumn.Exploited] = sg.Exploited;
         }
 
         private static string GetJsonCveInfo(string cve)

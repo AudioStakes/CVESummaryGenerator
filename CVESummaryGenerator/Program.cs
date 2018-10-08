@@ -141,6 +141,9 @@ namespace CVESummaryGenerator
                 // ループで作成した対象製品データのまとめを格納する
                 SetSummaryOfTargetProductsToWorkRow(workRow, summaryOfTargetProducts, TableRepresentingPresenceOfTargetProduct);
 
+                // CVSSからCVEの攻撃のしやすさを判別する
+                CheckEaseOfAttack(workRow);
+
                 // Rows.Addメソッドを使ってデータを追加
                 summaryTable.Rows.Add(workRow);
             }
@@ -159,6 +162,37 @@ namespace CVESummaryGenerator
             csv.ConvertDataTableToCsv(affectedTargetProductsTable, csvPath + "_affectedTargetProducts.csv", true);
 
             Console.ReadLine();
+        }
+
+        private static void CheckEaseOfAttack(DataRow workRow)
+        {
+            string CVSS = workRow[Constants.SummaryTableColumn.VectorString] as string;
+            bool IS_AV_N = CVSS.Contains("AV:N");
+            bool IS_AC_L = CVSS.Contains("AC:L");
+            bool IS_PR_N = CVSS.Contains("PR:N");
+            bool IS_UI_N = CVSS.Contains("UI:N");
+
+            if (IS_AV_N && IS_AC_L && IS_PR_N && IS_UI_N)
+            {
+                workRow[Constants.SummaryTableColumn.EaseOfAttack] = "★★★危険。詳細を要チェック★★★";
+            }
+
+            if (!IS_AV_N)
+            {
+                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "攻撃元区分はネットワークではない" + Environment.NewLine;
+            }
+            if (!IS_AC_L)
+            {
+                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "攻撃条件の複雑さは低い" + Environment.NewLine;
+            }
+            if (!IS_PR_N)
+            {
+                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "特権レベルが必要とされている" + Environment.NewLine;
+            }
+            if (!IS_UI_N)
+            {
+                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "ユーザ関与を必要とする" + Environment.NewLine;
+            }
         }
 
         private static void OutputValuesOfTheSummaryTable(DataTable summaryTable)
@@ -246,13 +280,14 @@ namespace CVESummaryGenerator
             summaryTable.Columns.Add(Constants.SummaryTableColumn.LatestReleaseExploitability);
             summaryTable.Columns.Add(Constants.SummaryTableColumn.OlderReleaseExploitability);
             summaryTable.Columns.Add(Constants.SummaryTableColumn.DenialOfService);
-            summaryTable.Columns.Add(Constants.SummaryTableColumn.VectorString);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.VectorString, Type.GetType("System.String"));
             summaryTable.Columns.Add(Constants.SummaryTableColumn.BaseScore, Type.GetType("System.Double"));
             summaryTable.Columns.Add(Constants.SummaryTableColumn.TemporalScore, Type.GetType("System.Double"));
             foreach (var targetProduct in targetProducts)
             {
                 summaryTable.Columns.Add(targetProduct);
             }
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.EaseOfAttack);
             summaryTable.Columns.Add(Constants.SummaryTableColumn.Remarks);
         }
 

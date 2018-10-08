@@ -17,6 +17,7 @@ namespace CVESummaryGenerator
             public static readonly string VectorString = "CVSS";
             public static readonly string BaseScore = "基本値";
             public static readonly string TemporalScore = "現状値";
+            public static readonly string EaseOfAttack = "攻撃しやすさ";
             public static readonly string Remarks = "備考";
         }
 

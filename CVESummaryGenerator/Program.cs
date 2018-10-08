@@ -138,34 +138,15 @@ namespace CVESummaryGenerator
                     }
                 }
 
-                // tableへのデータ追加用文字列を作成
-                var LatestRelease = sg.ExploitabilityAssessment.LatestReleaseExploitability.Id.ToString() + "-" + sg.ExploitabilityAssessment.LatestReleaseExploitability.Name; // 最新のソフトウェア リリース
-                var OlderRelease = sg.ExploitabilityAssessment.OlderReleaseExploitability.Id.ToString() + "-" + sg.ExploitabilityAssessment.OlderReleaseExploitability.Name; // 過去のソフトウェア リリース
-
-                // 対象製品データのまとめを格納する
-                workRow[Constants.SummaryTableColumn.LatestReleaseExploitability] = LatestRelease;
-                workRow[Constants.SummaryTableColumn.OlderReleaseExploitability] = OlderRelease;
-                workRow[Constants.SummaryTableColumn.VectorString] = summaryOfTargetProducts.VectorString;
-                workRow[Constants.SummaryTableColumn.BaseScore] = summaryOfTargetProducts.BaseScore;
-                workRow[Constants.SummaryTableColumn.TemporalScore] = summaryOfTargetProducts.TemporalScore;
-                workRow[Constants.SummaryTableColumn.Severity] = summaryOfTargetProducts.Severity;
-                foreach (string targetProductName in TableRepresentingPresenceOfTargetProduct.Keys)
-                {
-                    workRow[targetProductName] = TableRepresentingPresenceOfTargetProduct[targetProductName];
-                }
+                // ループで作成した対象製品データのまとめを格納する
+                SetSummaryOfTargetProductsToWorkRow(workRow, summaryOfTargetProducts, TableRepresentingPresenceOfTargetProduct);
 
                 // Rows.Addメソッドを使ってデータを追加
                 summaryTable.Rows.Add(workRow);
             }
 
-            Console.WriteLine("tableの中身を表示");
-            //foreach (DataRow Row in summaryTable.Rows)
-            //{
-            //    for (int i = 0; i < Row.ItemArray.Length; i++)
-            //    {
-            //        Console.WriteLine(Row[i].ToString() + "|");
-            //    }
-            //}
+            // summaryTableの値を出力する
+            OutputValuesOfTheSummaryTable(summaryTable);
 
             // ＣＳＶファイル保存先の完全パスを取得
             string csvPath = GetFullPathWithCurrentDirectoryAndCurrentTimeAsCSVFileName();
@@ -178,6 +159,35 @@ namespace CVESummaryGenerator
             csv.ConvertDataTableToCsv(affectedTargetProductsTable, csvPath + "_affectedTargetProducts.csv", true);
 
             Console.ReadLine();
+        }
+
+        private static void OutputValuesOfTheSummaryTable(DataTable summaryTable)
+        {
+            foreach (DataRow Row in summaryTable.Rows)
+            {
+                for (int i = 0; i < Row.ItemArray.Length; i++)
+                {
+                    Console.WriteLine(Row[i]);
+                }
+            }
+        }
+
+        private static void SetSummaryOfTargetProductsToWorkRow(DataRow workRow, AffectedProduct summaryOfTargetProducts, Hashtable tableRepresentingPresenceOfTargetProduct)
+        {
+            workRow[Constants.SummaryTableColumn.VectorString] = summaryOfTargetProducts.VectorString;
+            workRow[Constants.SummaryTableColumn.BaseScore] = summaryOfTargetProducts.BaseScore;
+            workRow[Constants.SummaryTableColumn.TemporalScore] = summaryOfTargetProducts.TemporalScore;
+            workRow[Constants.SummaryTableColumn.Severity] = summaryOfTargetProducts.Severity;
+            foreach (string targetProductName in tableRepresentingPresenceOfTargetProduct.Keys)
+            {
+                workRow[targetProductName] = tableRepresentingPresenceOfTargetProduct[targetProductName];
+            }
+        }
+
+        private static object CreateStringOfReleaseValueForTable(ReleaseExploitability ReleaseExploitability)
+        {
+            return ReleaseExploitability.Id.ToString() + "-" + ReleaseExploitability.Name;
+
         }
 
         private static void SetColumnsToAffectedTargetProductsTable(DataTable affectedTargetProductsTable)
@@ -347,6 +357,12 @@ namespace CVESummaryGenerator
                 .Replace("</p>", Environment.NewLine);
             workRow[Constants.SummaryTableColumn.PubliclyDisclosed] = sg.PubliclyDisclosed;
             workRow[Constants.SummaryTableColumn.Exploited] = sg.Exploited;
+
+            // 最新及び過去のソフトウェアリリース情報を作成して格納する
+            var LatestRelease = CreateStringOfReleaseValueForTable(sg.ExploitabilityAssessment.LatestReleaseExploitability);
+            var OlderRelease = CreateStringOfReleaseValueForTable(sg.ExploitabilityAssessment.OlderReleaseExploitability);
+            workRow[Constants.SummaryTableColumn.LatestReleaseExploitability] = LatestRelease;
+            workRow[Constants.SummaryTableColumn.OlderReleaseExploitability] = OlderRelease;
         }
 
         private static string GetJsonCveInfo(string cve)

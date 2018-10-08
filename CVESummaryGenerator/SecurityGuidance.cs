@@ -60,16 +60,18 @@ namespace CVESummaryGenerator
         public string Description { get; set; }
     }
 
-    class LatestReleaseExploitability
+    class ReleaseExploitability
     {
         public int Id { get; set; }
         public string Name { get; set; }
     }
 
-    class OlderReleaseExploitability
+    class LatestReleaseExploitability : ReleaseExploitability
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
+    }
+
+    class OlderReleaseExploitability : ReleaseExploitability
+    {
     }
 
     class ExploitabilityAssessment

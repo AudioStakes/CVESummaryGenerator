@@ -31,23 +31,7 @@ namespace CVESummaryGenerator
             DataTable summaryTable = new DataTable("SummaryTable");
 
             // まとめテーブルにカラム名の追加
-            summaryTable.Columns.Add(Constants.SummaryTableColumn.CveNumber);
-            summaryTable.Columns.Add(Constants.SummaryTableColumn.CveTitle);
-            summaryTable.Columns.Add(Constants.SummaryTableColumn.Description);
-            summaryTable.Columns.Add(Constants.SummaryTableColumn.Severity);
-            summaryTable.Columns.Add(Constants.SummaryTableColumn.PubliclyDisclosed);
-            summaryTable.Columns.Add(Constants.SummaryTableColumn.Exploited);
-            summaryTable.Columns.Add(Constants.SummaryTableColumn.LatestReleaseExploitability);
-            summaryTable.Columns.Add(Constants.SummaryTableColumn.OlderReleaseExploitability);
-            summaryTable.Columns.Add(Constants.SummaryTableColumn.DenialOfService);
-            summaryTable.Columns.Add(Constants.SummaryTableColumn.VectorString);
-            summaryTable.Columns.Add(Constants.SummaryTableColumn.BaseScore, Type.GetType("System.Double"));
-            summaryTable.Columns.Add(Constants.SummaryTableColumn.TemporalScore, Type.GetType("System.Double"));
-            foreach (var targetProduct in targetProducts)
-            {
-                summaryTable.Columns.Add(targetProduct);
-            }
-            summaryTable.Columns.Add(Constants.SummaryTableColumn.Remarks);
+            SetColumnsToSummaryTable(targetProducts, summaryTable);
 
             // ＤＢにまとめテーブルを追加
             dataSet.Tables.Add(summaryTable);
@@ -55,48 +39,8 @@ namespace CVESummaryGenerator
             // 影響対象製品のデータを扱うテーブルを作成
             DataTable affectedTargetProductsTable = new DataTable("AffectedTargetProducts");
 
-            // 影響対象製品のデータを扱うテーブルにカラム名の追加
-            affectedTargetProductsTable.Columns.Add("CVENumber");
-            affectedTargetProductsTable.Columns.Add("Name");
-            affectedTargetProductsTable.Columns.Add("Platform");
-            affectedTargetProductsTable.Columns.Add("ImpactId");
-            affectedTargetProductsTable.Columns.Add("Impact");
-            affectedTargetProductsTable.Columns.Add("SeverityId");
-            affectedTargetProductsTable.Columns.Add("Severity");
-            affectedTargetProductsTable.Columns.Add("BaseScore");
-            affectedTargetProductsTable.Columns.Add("TemporalScore");
-            affectedTargetProductsTable.Columns.Add("EnvironmentScore");
-            affectedTargetProductsTable.Columns.Add("VectorString");
-            affectedTargetProductsTable.Columns.Add("Supersedence");
-            affectedTargetProductsTable.Columns.Add("KnowledgeBaseId");
-            affectedTargetProductsTable.Columns.Add("KnowledgeBaseUrl");
-            affectedTargetProductsTable.Columns.Add("MonthlyKnowledgeBaseId");
-            affectedTargetProductsTable.Columns.Add("MonthlyKnowledgeBaseUrl");
-            affectedTargetProductsTable.Columns.Add("DownloadUrl");
-            affectedTargetProductsTable.Columns.Add("DownloadTitle");
-            affectedTargetProductsTable.Columns.Add("MonthlyDownloadUrl");
-            affectedTargetProductsTable.Columns.Add("MonthlyDownloadTitle");
-            affectedTargetProductsTable.Columns.Add("ArticleTitle1");
-            affectedTargetProductsTable.Columns.Add("ArticleUrl1");
-            affectedTargetProductsTable.Columns.Add("DownloadTitle1");
-            affectedTargetProductsTable.Columns.Add("DownloadUrl1");
-            affectedTargetProductsTable.Columns.Add("DoesRowOneHaveAtLeastOneArticleOrUrl");
-            affectedTargetProductsTable.Columns.Add("ArticleTitle2");
-            affectedTargetProductsTable.Columns.Add("ArticleUrl2");
-            affectedTargetProductsTable.Columns.Add("DownloadTitle2");
-            affectedTargetProductsTable.Columns.Add("DownloadUrl2");
-            affectedTargetProductsTable.Columns.Add("DoesRowTwoHaveAtLeastOneArticleOrUrl");
-            affectedTargetProductsTable.Columns.Add("ArticleTitle3");
-            affectedTargetProductsTable.Columns.Add("ArticleUrl3");
-            affectedTargetProductsTable.Columns.Add("DownloadTitle3");
-            affectedTargetProductsTable.Columns.Add("DownloadUrl3");
-            affectedTargetProductsTable.Columns.Add("DoesRowThreeHaveAtLeastOneArticleOrUrl");
-            affectedTargetProductsTable.Columns.Add("ArticleTitle4");
-            affectedTargetProductsTable.Columns.Add("ArticleUrl4");
-            affectedTargetProductsTable.Columns.Add("DownloadTitle4");
-            affectedTargetProductsTable.Columns.Add("DownloadUrl4");
-            affectedTargetProductsTable.Columns.Add("DoesRowFourHaveAtLeastOneArticleOrUrl");
-            affectedTargetProductsTable.Columns.Add("CountOfRowsWithAtLeastOneArticleOrUrl");
+            // 影響対象製品のデータを扱うテーブルにカラム名を設定
+            SetColumnsToAffectedTargetProductsTable(affectedTargetProductsTable);
 
             foreach (var cve in targetCVElist)
             {
@@ -138,6 +82,8 @@ namespace CVESummaryGenerator
                     n.Name == Constants.ProductName.Win_2008_32Bit_SP2
                     || n.Name == Constants.ProductName.Win_2012_R2_SeverCore
                     || n.Name == Constants.ProductName.Win_2016_ServerCore
+                    || n.Name.Contains(Constants.ProductName.MS_NET_Framework_4_x)
+                    || n.Name.Contains(Constants.ProductName.MS_SQL_Server_2014_x)
                     );
 
                 // targetProductsの有無を判別し、なければ処理終了
@@ -173,7 +119,7 @@ namespace CVESummaryGenerator
                     affectedTargetProductsTable.Rows.Add(affectedTargetProductRow);
 
                     // ＣＶＥの影響対象製品と一致する目的製品を確認する
-                    CheckIfEqualToProductName(affectedTargetProduct.Name, TableRepresentingPresenceOfTargetProduct);
+                    CheckIfContainToProductName(affectedTargetProduct.Name, TableRepresentingPresenceOfTargetProduct);
 
                     // TODO:affectedTargetProductごとにまとめＣＶＥファイルを作成する。
                     // ダウンロードＵＲＬなどが載っていたほうがわかりやすいため。
@@ -232,6 +178,72 @@ namespace CVESummaryGenerator
             csv.ConvertDataTableToCsv(affectedTargetProductsTable, csvPath + "_affectedTargetProducts.csv", true);
 
             Console.ReadLine();
+        }
+
+        private static void SetColumnsToAffectedTargetProductsTable(DataTable affectedTargetProductsTable)
+        {
+            affectedTargetProductsTable.Columns.Add("CVENumber");
+            affectedTargetProductsTable.Columns.Add("Name");
+            affectedTargetProductsTable.Columns.Add("CountOfRowsWithAtLeastOneArticleOrUrl");
+            affectedTargetProductsTable.Columns.Add("ArticleUrl1");
+            affectedTargetProductsTable.Columns.Add("DownloadTitle1");
+            affectedTargetProductsTable.Columns.Add("DownloadUrl1");
+            affectedTargetProductsTable.Columns.Add("ArticleUrl2");
+            affectedTargetProductsTable.Columns.Add("DownloadTitle2");
+            affectedTargetProductsTable.Columns.Add("DownloadUrl2");
+            affectedTargetProductsTable.Columns.Add("ArticleUrl3");
+            affectedTargetProductsTable.Columns.Add("DownloadTitle3");
+            affectedTargetProductsTable.Columns.Add("DownloadUrl3");
+            affectedTargetProductsTable.Columns.Add("ArticleUrl4");
+            affectedTargetProductsTable.Columns.Add("DownloadTitle4");
+            affectedTargetProductsTable.Columns.Add("DownloadUrl4");
+            affectedTargetProductsTable.Columns.Add("Platform");
+            affectedTargetProductsTable.Columns.Add("ImpactId");
+            affectedTargetProductsTable.Columns.Add("Impact");
+            affectedTargetProductsTable.Columns.Add("SeverityId");
+            affectedTargetProductsTable.Columns.Add("Severity");
+            affectedTargetProductsTable.Columns.Add("BaseScore");
+            affectedTargetProductsTable.Columns.Add("TemporalScore");
+            affectedTargetProductsTable.Columns.Add("EnvironmentScore");
+            affectedTargetProductsTable.Columns.Add("VectorString");
+            affectedTargetProductsTable.Columns.Add("Supersedence");
+            affectedTargetProductsTable.Columns.Add("KnowledgeBaseId");
+            affectedTargetProductsTable.Columns.Add("KnowledgeBaseUrl");
+            affectedTargetProductsTable.Columns.Add("MonthlyKnowledgeBaseId");
+            affectedTargetProductsTable.Columns.Add("MonthlyKnowledgeBaseUrl");
+            affectedTargetProductsTable.Columns.Add("DownloadUrl");
+            affectedTargetProductsTable.Columns.Add("DownloadTitle");
+            affectedTargetProductsTable.Columns.Add("MonthlyDownloadUrl");
+            affectedTargetProductsTable.Columns.Add("MonthlyDownloadTitle");
+            affectedTargetProductsTable.Columns.Add("ArticleTitle1");
+            affectedTargetProductsTable.Columns.Add("ArticleTitle2");
+            affectedTargetProductsTable.Columns.Add("ArticleTitle3");
+            affectedTargetProductsTable.Columns.Add("ArticleTitle4");
+            affectedTargetProductsTable.Columns.Add("DoesRowOneHaveAtLeastOneArticleOrUrl");
+            affectedTargetProductsTable.Columns.Add("DoesRowTwoHaveAtLeastOneArticleOrUrl");
+            affectedTargetProductsTable.Columns.Add("DoesRowThreeHaveAtLeastOneArticleOrUrl");
+            affectedTargetProductsTable.Columns.Add("DoesRowFourHaveAtLeastOneArticleOrUrl");
+        }
+
+        private static void SetColumnsToSummaryTable(List<string> targetProducts, DataTable summaryTable)
+        {
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.CveNumber);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.CveTitle);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.Description);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.Severity);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.PubliclyDisclosed);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.Exploited);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.LatestReleaseExploitability);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.OlderReleaseExploitability);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.DenialOfService);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.VectorString);
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.BaseScore, Type.GetType("System.Double"));
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.TemporalScore, Type.GetType("System.Double"));
+            foreach (var targetProduct in targetProducts)
+            {
+                summaryTable.Columns.Add(targetProduct);
+            }
+            summaryTable.Columns.Add(Constants.SummaryTableColumn.Remarks);
         }
 
         private static void SetAffectedTargetProductValuesToRow(AffectedProduct affectedTargetProduct, DataRow affectedTargetProductRow)
@@ -305,12 +317,12 @@ namespace CVESummaryGenerator
             }
         }
 
-        private static void CheckIfEqualToProductName(string affectedTargetProductName, Hashtable tableRepresentingPresenceOfTargetProduct)
+        private static void CheckIfContainToProductName(string affectedTargetProductName, Hashtable tableRepresentingPresenceOfTargetProduct)
         {
             ArrayList targetProductNameList = new ArrayList(tableRepresentingPresenceOfTargetProduct.Keys);
             foreach (string targetProductName in targetProductNameList)
             {
-                if (affectedTargetProductName == targetProductName)
+                if (affectedTargetProductName.Contains(targetProductName))
                 {
                     tableRepresentingPresenceOfTargetProduct[targetProductName] = "○";
                 }
@@ -359,6 +371,9 @@ namespace CVESummaryGenerator
                 Constants.ProductName.Win_2008_32Bit_SP2,
                 Constants.ProductName.Win_2012_R2_SeverCore,
                 Constants.ProductName.Win_2016_ServerCore,
+                Constants.ProductName.MS_NET_Framework_4_x,
+                Constants.ProductName.MS_SQL_Server_2014_x,
+
             };
         }
 
@@ -378,7 +393,7 @@ namespace CVESummaryGenerator
 
         private static string GetTargetCVEs()
         {
-            return @"CVE-2018-8392 CVE-2018-8393 ADV180022 CVE-2018-0965 CVE-2018-8271 CVE-2018-8332 CVE-2018-8335 CVE-2018-8336 CVE-2018-8410 CVE-2018-8419 CVE-2018-8420 CVE-2018-8421 CVE-2018-8424 CVE-2018-8433 CVE-2018-8434 CVE-2018-8435 CVE-2018-8438 CVE-2018-8439 CVE-2018-8440 CVE-2018-8442 CVE-2018-8443 CVE-2018-8444 CVE-2018-8446 CVE-2018-8449 CVE-2018-8455 CVE-2018-8462 CVE-2018-8468 CVE-2018-8475";
+            return @"CVE-2018-8421 CVE-2017-8516 CVE-2018-8392 CVE-2018-8393 ADV180022 CVE-2018-0965 CVE-2018-8271 CVE-2018-8332 CVE-2018-8335 CVE-2018-8336 CVE-2018-8410 CVE-2018-8419 CVE-2018-8420 CVE-2018-8421 CVE-2018-8424 CVE-2018-8433 CVE-2018-8434 CVE-2018-8435 CVE-2018-8438 CVE-2018-8439 CVE-2018-8440 CVE-2018-8442 CVE-2018-8443 CVE-2018-8444 CVE-2018-8446 CVE-2018-8449 CVE-2018-8455 CVE-2018-8462 CVE-2018-8468 CVE-2018-8475";
             //return @"CVE-2018-8308 CVE-2018-83080 CVE-2018-8176 CVE-2018-8311 ADV113456 正規表現と一致しない";
         }
     }

@@ -8,6 +8,7 @@ using System.Text;
 using System.Data;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
+using System.Windows.Forms;
 
 namespace CVESummaryGenerator
 {
@@ -15,6 +16,8 @@ namespace CVESummaryGenerator
     {
         public static void Main(string[] args)
         {
+            //Application.Run(new CveSummaryGeneratorForm());
+
             // まとめ作成対象CVE一覧を取得
             var targetCVEs = GetTargetCVEs();
 

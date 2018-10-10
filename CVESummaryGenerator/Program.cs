@@ -187,7 +187,7 @@ namespace CVESummaryGenerator
             }
             if (!IS_AC_L)
             {
-                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "攻撃条件の複雑さは低い" + Environment.NewLine;
+                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "攻撃条件の複雑さが高い" + Environment.NewLine;
             }
             if (!IS_PR_N)
             {
@@ -453,7 +453,8 @@ namespace CVESummaryGenerator
 
         private static string GetTargetCVEs()
         {
-            return @"CVE-2018-8333 CVE-2018-8438"; // サービス拒否の対象外と永続的の２種類
+            //return @"CVE-2018-8333 CVE-2018-8438"; // サービス拒否の対象外と永続的の２種類
+            return @"CVE-2018-8333 CVE-2018-8411 CVE-2018-8413 CVE-2018-8320 CVE-2018-8330 CVE-2018-8423 CVE-2018-8427 CVE-2018-8432 CVE-2018-8453 CVE-2018-8472 CVE-2018-8481 CVE-2018-8482 CVE-2018-8484 CVE-2018-8486 CVE-2018-8489 CVE-2018-8490 CVE-2018-8492 CVE-2018-8493 CVE-2018-8494 CVE-2018-8495 CVE-2018-8497"; // 2018/10
             //return @"CVE-2018-8308 CVE-2018-83080 CVE-2018-8176 CVE-2018-8311 ADV113456 正規表現と一致しない";
         }
     }

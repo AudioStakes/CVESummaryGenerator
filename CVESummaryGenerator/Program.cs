@@ -152,10 +152,11 @@ namespace CVESummaryGenerator
             }
 
             // summaryTableの値を出力する
-            OutputValuesOfTheSummaryTable(summaryTable);
+            //OutputValuesOfTheSummaryTable(summaryTable);
 
             // ＣＳＶファイル保存先の完全パスを取得
             string csvPath = GetFullPathWithCurrentDirectoryAndCurrentTimeAsCSVFileName();
+            Console.WriteLine(csvPath);
 
             // CSVコンバーターを呼び出す
             DatatableToCSVConverter csv = new DatatableToCSVConverter();
@@ -401,6 +402,11 @@ namespace CVESummaryGenerator
             var OlderRelease = CreateStringOfReleaseValueForTable(sg.ExploitabilityAssessment.OlderReleaseExploitability);
             workRow[Constants.SummaryTableColumn.LatestReleaseExploitability] = LatestRelease;
             workRow[Constants.SummaryTableColumn.OlderReleaseExploitability] = OlderRelease;
+
+            // サービス拒否を日本語表記へ変換する。APIの表記は以下の通り。
+            // 対象外：<DenialOfServiceExploitability i:nil="true"/>
+            // 永続的：<DenialOfServiceExploitability>永続的</DenialOfServiceExploitability>
+            workRow[Constants.SummaryTableColumn.DenialOfService] = String.IsNullOrEmpty((string)sg.ExploitabilityAssessment.DenialOfServiceExploitability) ? "対象外" : sg.ExploitabilityAssessment.DenialOfServiceExploitability;
         }
 
         private static string GetJsonCveInfo(string cve)
@@ -447,7 +453,7 @@ namespace CVESummaryGenerator
 
         private static string GetTargetCVEs()
         {
-            return @"CVE-2018-8421 CVE-2017-8516 CVE-2018-8392 CVE-2018-8393 ADV180022 CVE-2018-0965 CVE-2018-8271 CVE-2018-8332 CVE-2018-8335 CVE-2018-8336 CVE-2018-8410 CVE-2018-8419 CVE-2018-8420 CVE-2018-8421 CVE-2018-8424 CVE-2018-8433 CVE-2018-8434 CVE-2018-8435 CVE-2018-8438 CVE-2018-8439 CVE-2018-8440 CVE-2018-8442 CVE-2018-8443 CVE-2018-8444 CVE-2018-8446 CVE-2018-8449 CVE-2018-8455 CVE-2018-8462 CVE-2018-8468 CVE-2018-8475";
+            return @"CVE-2018-8333 CVE-2018-8438"; // サービス拒否の対象外と永続的の２種類
             //return @"CVE-2018-8308 CVE-2018-83080 CVE-2018-8176 CVE-2018-8311 ADV113456 正規表現と一致しない";
         }
     }

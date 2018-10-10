@@ -215,6 +215,8 @@ namespace CVESummaryGenerator
             workRow[Constants.SummaryTableColumn.VectorString] = summaryOfTargetProducts.VectorString;
             workRow[Constants.SummaryTableColumn.BaseScore] = summaryOfTargetProducts.BaseScore;
             workRow[Constants.SummaryTableColumn.TemporalScore] = summaryOfTargetProducts.TemporalScore;
+
+            // TODO:深刻度が「緊急」の場合は強調されるようにする
             workRow[Constants.SummaryTableColumn.Severity] = summaryOfTargetProducts.Severity;
             foreach (string targetProductName in tableRepresentingPresenceOfTargetProduct.Keys)
             {
@@ -395,6 +397,8 @@ namespace CVESummaryGenerator
                 .Replace("<p>", "")
                 .Replace("</p>", Environment.NewLine);
             workRow[Constants.SummaryTableColumn.PubliclyDisclosed] = sg.PubliclyDisclosed;
+            
+            //TODO:悪用ありの場合は強調されるように修正する
             workRow[Constants.SummaryTableColumn.Exploited] = sg.Exploited;
 
             // 最新及び過去のソフトウェアリリース情報を作成して格納する

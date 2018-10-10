@@ -154,6 +154,8 @@ namespace CVESummaryGenerator
             // summaryTableの値を出力する
             //OutputValuesOfTheSummaryTable(summaryTable);
 
+            // TODO:CVEの脅威レベル（自作）で優先度順に並べられるようにする
+
             // ＣＳＶファイル保存先の完全パスを取得
             string csvPath = GetFullPathWithCurrentDirectoryAndCurrentTimeAsCSVFileName();
             Console.WriteLine(csvPath);
@@ -161,9 +163,13 @@ namespace CVESummaryGenerator
             // CSVコンバーターを呼び出す
             DatatableToCSVConverter csv = new DatatableToCSVConverter();
 
+            // DistinctなダウンロードＵＲＬを取得する
+            DataTable distinctUrlForEachName = affectedTargetProductsTable.DefaultView.ToTable(true, "Name", "ArticleUrl1", "DownloadTitle1", "DownloadUrl1", "ArticleUrl2", "DownloadTitle2", "DownloadUrl2", "ArticleUrl3", "DownloadTitle3", "DownloadUrl3", "ArticleUrl4", "DownloadTitle4", "DownloadUrl4");
+
             // DataTableをCSVで保存する
             csv.ConvertDataTableToCsv(summaryTable, csvPath, true);
             csv.ConvertDataTableToCsv(affectedTargetProductsTable, csvPath + "_affectedTargetProducts.csv", true);
+            csv.ConvertDataTableToCsv(distinctUrlForEachName, csvPath + "_distinctUrlForEachName.csv", true);
 
             Console.ReadLine();
         }

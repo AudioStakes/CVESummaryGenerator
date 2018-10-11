@@ -122,7 +122,6 @@ namespace CVESummaryGenerator
                     // ＣＶＥの影響対象製品と一致する目的製品を確認する
                     CheckIfContainToProductName(affectedTargetProduct.Name, TableRepresentingPresenceOfTargetProduct);
 
-                    // TODO:affectedTargetProductごとにまとめＣＶＥファイルを作成する。
                     // ダウンロードＵＲＬなどが載っていたほうがわかりやすいため。
 
                     if (isFirst)

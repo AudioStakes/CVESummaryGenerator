@@ -189,19 +189,19 @@ namespace CVESummaryGenerator
 
             if (!IS_AV_N)
             {
-                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "攻撃元区分はネットワークではない" + Environment.NewLine;
+                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "(-)攻撃元区分はネットワークではない" + Environment.NewLine;
             }
             if (!IS_AC_L)
             {
-                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "攻撃条件の複雑さが高い" + Environment.NewLine;
+                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "(-)攻撃条件の複雑さが高い" + Environment.NewLine;
             }
             if (!IS_PR_N)
             {
-                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "特権レベルが必要とされている" + Environment.NewLine;
+                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "(-)特権レベルが必要とされている" + Environment.NewLine;
             }
             if (!IS_UI_N)
             {
-                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "ユーザ関与を必要とする" + Environment.NewLine;
+                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "(-)ユーザ関与を必要とする" + Environment.NewLine;
             }
         }
 
@@ -222,8 +222,13 @@ namespace CVESummaryGenerator
             workRow[Constants.SummaryTableColumn.BaseScore] = summaryOfTargetProducts.BaseScore;
             workRow[Constants.SummaryTableColumn.TemporalScore] = summaryOfTargetProducts.TemporalScore;
 
-            // TODO:深刻度が「緊急」の場合は強調されるようにする
+            // 深刻度が「緊急」の場合は攻撃しやすさ列に(+)として設定
             workRow[Constants.SummaryTableColumn.Severity] = summaryOfTargetProducts.Severity;
+            if (summaryOfTargetProducts.Severity == "緊急")
+            {
+                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "(+)深刻度が緊急";
+            }
+
             foreach (string targetProductName in tableRepresentingPresenceOfTargetProduct.Keys)
             {
                 workRow[targetProductName] = tableRepresentingPresenceOfTargetProduct[targetProductName];
@@ -404,8 +409,12 @@ namespace CVESummaryGenerator
                 .Replace("</p>", Environment.NewLine);
             workRow[Constants.SummaryTableColumn.PubliclyDisclosed] = sg.PubliclyDisclosed;
             
-            //TODO:悪用ありの場合は強調されるように修正する
+            // 悪用ありの場合は攻撃しやすさ列へ(+)として設定
             workRow[Constants.SummaryTableColumn.Exploited] = sg.Exploited;
+            if (sg.Exploited == "あり")
+            {
+                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "(+)悪用あり" + Environment.NewLine;
+            }
 
             // 最新及び過去のソフトウェアリリース情報を作成して格納する
             var LatestRelease = CreateStringOfReleaseValueForTable(sg.ExploitabilityAssessment.LatestReleaseExploitability);
@@ -463,8 +472,8 @@ namespace CVESummaryGenerator
 
         private static string GetTargetCVEs()
         {
-            //return @"CVE-2018-8333 CVE-2018-8438"; // サービス拒否の対象外と永続的の２種類
-            return @"CVE-2018-8333 CVE-2018-8411 CVE-2018-8413 CVE-2018-8320 CVE-2018-8330 CVE-2018-8423 CVE-2018-8427 CVE-2018-8432 CVE-2018-8453 CVE-2018-8472 CVE-2018-8481 CVE-2018-8482 CVE-2018-8484 CVE-2018-8486 CVE-2018-8489 CVE-2018-8490 CVE-2018-8492 CVE-2018-8493 CVE-2018-8494 CVE-2018-8495 CVE-2018-8497"; // 2018/10
+            return @"CVE-2018-8333 CVE-2018-8438 CVE-2018-8453 CVE-2018-8490"; // サービス拒否の対象外と永続的の２種, 悪用ありなし, 深刻度が重要と緊急
+            //return @"CVE-2018-8333 CVE-2018-8411 CVE-2018-8413 CVE-2018-8320 CVE-2018-8330 CVE-2018-8423 CVE-2018-8427 CVE-2018-8432 CVE-2018-8453 CVE-2018-8472 CVE-2018-8481 CVE-2018-8482 CVE-2018-8484 CVE-2018-8486 CVE-2018-8489 CVE-2018-8490 CVE-2018-8492 CVE-2018-8493 CVE-2018-8494 CVE-2018-8495 CVE-2018-8497"; // 2018/10
             //return @"CVE-2018-8308 CVE-2018-83080 CVE-2018-8176 CVE-2018-8311 ADV113456 正規表現と一致しない";
         }
     }

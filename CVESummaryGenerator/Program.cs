@@ -75,8 +75,6 @@ namespace CVESummaryGenerator
                 // JSONを.NETのクラスにデシリアライズ
                 SecurityGuidance sg = JsonConvert.DeserializeObject<SecurityGuidance>(JsonCveInfo);
 
-                // TODO：「サービス拒否」の項目はjsonにないのか確認
-
                 // 共通項目のデータを格納する
                 SetCommonCveValueToWorkRow(workRow, sg);
 

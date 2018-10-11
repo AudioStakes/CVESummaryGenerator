@@ -122,8 +122,6 @@ namespace CVESummaryGenerator
                     // ＣＶＥの影響対象製品と一致する目的製品を確認する
                     CheckIfContainToProductName(affectedTargetProduct.Name, TableRepresentingPresenceOfTargetProduct);
 
-                    // ダウンロードＵＲＬなどが載っていたほうがわかりやすいため。
-
                     if (isFirst)
                     {
                         // １番目のデータは丸ごと代入する
@@ -147,9 +145,6 @@ namespace CVESummaryGenerator
                 // Rows.Addメソッドを使ってデータを追加
                 summaryTable.Rows.Add(workRow);
             }
-
-            // summaryTableの値を出力する
-            //OutputValuesOfTheSummaryTable(summaryTable);
 
             // TODO:CVEの脅威レベル（自作）で優先度順に並べられるようにする
 

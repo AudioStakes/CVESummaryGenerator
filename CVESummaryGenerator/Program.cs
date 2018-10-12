@@ -107,6 +107,10 @@ namespace CVESummaryGenerator
                 // 対象製品データのうち値が同じ項目は一つにまとめる
                 foreach (var affectedTargetProduct in affectedTargetProducts)
                 {
+                    //affectedTargetProductsTableの新しい行を作成して、
+                    //affectedTargetProduct情報をセットするメソッドを追加する
+                    //↓↓↓メソッド対象ここから↓↓↓
+
                     // affectedTargetProductに対応する行を作成
                     DataRow affectedTargetProductRow = affectedTargetProductsTable.NewRow();
 
@@ -118,6 +122,8 @@ namespace CVESummaryGenerator
 
                     // Rows.Addメソッドを使ってデータを追加
                     affectedTargetProductsTable.Rows.Add(affectedTargetProductRow);
+                    
+                    //↑↑↑メソッド対象ここまで↑↑↑
 
                     // ＣＶＥの影響対象製品と一致する目的製品を確認する
                     CheckIfContainToProductName(affectedTargetProduct.Name, TableRepresentingPresenceOfTargetProduct);

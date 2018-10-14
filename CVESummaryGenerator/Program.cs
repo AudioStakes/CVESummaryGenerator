@@ -107,23 +107,8 @@ namespace CVESummaryGenerator
                 // 対象製品データのうち値が同じ項目は一つにまとめる
                 foreach (var affectedTargetProduct in affectedTargetProducts)
                 {
-                    //affectedTargetProductsTableの新しい行を作成して、
-                    //affectedTargetProduct情報をセットするメソッドを追加する
-                    //↓↓↓メソッド対象ここから↓↓↓
-
-                    // affectedTargetProductに対応する行を作成
-                    DataRow affectedTargetProductRow = affectedTargetProductsTable.NewRow();
-
-                    // CVENumberを格納
-                    affectedTargetProductRow["CveNumber"] = cve;
-
-                    // affectedTargetProductの値を行へセット
-                    SetAffectedTargetProductValuesToRow(affectedTargetProduct, affectedTargetProductRow);
-
-                    // Rows.Addメソッドを使ってデータを追加
-                    affectedTargetProductsTable.Rows.Add(affectedTargetProductRow);
-                    
-                    //↑↑↑メソッド対象ここまで↑↑↑
+                    //　Tableに新しい行を作成してaffectedTargetProduct情報をセット
+                    SetAffectedTargetProductsRow(affectedTargetProductsTable, affectedTargetProduct, cve);
 
                     // ＣＶＥの影響対象製品と一致する目的製品を確認する
                     CheckIfContainToProductName(affectedTargetProduct.Name, TableRepresentingPresenceOfTargetProduct);
@@ -170,6 +155,21 @@ namespace CVESummaryGenerator
             csv.ConvertDataTableToCsv(distinctUrlForEachName, csvPath + "_distinctUrlForEachName.csv", true);
 
             Console.ReadLine();
+        }
+
+        private static void SetAffectedTargetProductsRow(DataTable affectedTargetProductsTable, AffectedProduct affectedTargetProduct, string cve)
+        {
+            // affectedTargetProductに対応する行を作成
+            DataRow affectedTargetProductRow = affectedTargetProductsTable.NewRow();
+
+            // CVENumberを格納
+            affectedTargetProductRow["CveNumber"] = cve;
+
+            // affectedTargetProductの値を行へセット
+            SetAffectedTargetProductValuesToRow(affectedTargetProduct, affectedTargetProductRow);
+
+            // Rows.Addメソッドを使ってデータを追加
+            affectedTargetProductsTable.Rows.Add(affectedTargetProductRow);
         }
 
         private static void CheckEaseOfAttack(DataRow workRow)

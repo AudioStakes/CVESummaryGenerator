@@ -9,6 +9,7 @@ using System.Data;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace CVESummaryGenerator
 {
@@ -47,6 +48,9 @@ namespace CVESummaryGenerator
 
             foreach (var cve in targetCVElist)
             {
+                // サーバアクセスの間隔を1秒以上空けるようにする
+                Thread.Sleep(1000);
+
                 // CVEに対応する行を作成
                 DataRow workRow = summaryTable.NewRow();
 

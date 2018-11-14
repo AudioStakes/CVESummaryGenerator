@@ -83,12 +83,18 @@ namespace CVESummaryGenerator
                 SetCommonCveValueToWorkRow(workRow, sg);
 
                 // 対象とする製品のデータを抽出する
-                var affectedTargetProducts = sg.AffectedProducts.Where(n => 
+                var affectedTargetProducts = sg.AffectedProducts.Where(n =>
                     n.Name == Constants.ProductName.Win_2008_32Bit_SP2
                     || n.Name == Constants.ProductName.Win_2012_R2_SeverCore
+                    || n.Name == Constants.ProductName.Win_2012_R2
                     || n.Name == Constants.ProductName.Win_2016_ServerCore
+                    || n.Name == Constants.ProductName.Win_2016
                     || n.Name.Contains(Constants.ProductName.MS_NET_Framework_4_x)
                     || n.Name.Contains(Constants.ProductName.MS_SQL_Server_2014_x)
+                    || n.Name == Constants.ProductName.MS_Edge
+                    || n.Name == Constants.ProductName.IE_9
+                    || n.Name == Constants.ProductName.IE_10
+                    || n.Name == Constants.ProductName.IE_11
                     );
 
                 // targetProductsの有無を判別し、なければ処理終了
@@ -374,7 +380,7 @@ namespace CVESummaryGenerator
                 Console.WriteLine("対象製品のTemporalScoreに一致しない値があります");
             }
 
-            if (!summaryOfTargetProducts.Severity.Equals(affectedTargetProduct.Severity))
+            if (!String.IsNullOrEmpty(summaryOfTargetProducts.Severity) && !summaryOfTargetProducts.Severity.Equals(affectedTargetProduct.Severity))
             {
                 summaryOfTargetProducts.Severity = default(string);
                 Console.WriteLine("対象製品のSeverityの中に一致しないものがあります");
@@ -451,10 +457,15 @@ namespace CVESummaryGenerator
             return new List<string>(){
                 Constants.ProductName.Win_2008_32Bit_SP2,
                 Constants.ProductName.Win_2012_R2_SeverCore,
+                Constants.ProductName.Win_2012_R2,
                 Constants.ProductName.Win_2016_ServerCore,
+                Constants.ProductName.Win_2016,
                 Constants.ProductName.MS_NET_Framework_4_x,
                 Constants.ProductName.MS_SQL_Server_2014_x,
-
+                Constants.ProductName.MS_Edge,
+                Constants.ProductName.IE_9,
+                Constants.ProductName.IE_10,
+                Constants.ProductName.IE_11
             };
         }
 
@@ -474,7 +485,8 @@ namespace CVESummaryGenerator
 
         private static string GetTargetCVEs()
         {
-            return @"CVE-2018-8333 CVE-2018-8438 CVE-2018-8453 CVE-2018-8490"; // サービス拒否の対象外と永続的の２種, 悪用ありなし, 深刻度が重要と緊急
+            return @"CVE-2018-8256 CVE-2018-8407 CVE-2018-8408 CVE-2018-8415 CVE-2018-8417 CVE-2018-8450 CVE-2018-8471 CVE-2018-8476 CVE-2018-8485 CVE-2018-8542 CVE-2018-8543 CVE-2018-8544 CVE-2018-8547 CVE-2018-8549 CVE-2018-8550 CVE-2018-8552 CVE-2018-8553 CVE-2018-8555 CVE-2018-8556 CVE-2018-8557 CVE-2018-8561 CVE-2018-8562 CVE-2018-8563 CVE-2018-8564 CVE-2018-8565 CVE-2018-8566 CVE-2018-8584 CVE-2018-8588 CVE-2018-8589"; // 2018/11
+            //return @"CVE-2018-8333 CVE-2018-8438 CVE-2018-8453 CVE-2018-8490"; // サービス拒否の対象外と永続的の２種, 悪用ありなし, 深刻度が重要と緊急
             //return @"CVE-2018-8333 CVE-2018-8411 CVE-2018-8413 CVE-2018-8320 CVE-2018-8330 CVE-2018-8423 CVE-2018-8427 CVE-2018-8432 CVE-2018-8453 CVE-2018-8472 CVE-2018-8481 CVE-2018-8482 CVE-2018-8484 CVE-2018-8486 CVE-2018-8489 CVE-2018-8490 CVE-2018-8492 CVE-2018-8493 CVE-2018-8494 CVE-2018-8495 CVE-2018-8497"; // 2018/10
             //return @"CVE-2018-8308 CVE-2018-83080 CVE-2018-8176 CVE-2018-8311 ADV113456 正規表現と一致しない";
         }

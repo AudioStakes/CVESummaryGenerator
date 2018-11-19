@@ -31,8 +31,6 @@ namespace CVESummaryGenerator
             public static readonly string MS_NET_Framework_4_x = "Microsoft .NET Framework 4";
             public static readonly string MS_SQL_Server_2014_x = "Microsoft SQL Server 2014";
             public static readonly string MS_Edge = "Microsoft Edge";
-            public static readonly string IE_9 = "Internet Explorer 9";
-            public static readonly string IE_10 = "Internet Explorer 10";
             public static readonly string IE_11 = "Internet Explorer 11";
         }
     }

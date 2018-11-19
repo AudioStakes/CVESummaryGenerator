@@ -96,8 +96,6 @@ namespace CVESummaryGenerator
                     || n.Name.Contains(Constants.ProductName.MS_NET_Framework_4_x)
                     || n.Name.Contains(Constants.ProductName.MS_SQL_Server_2014_x)
                     || n.Name == Constants.ProductName.MS_Edge
-                    || n.Name == Constants.ProductName.IE_9
-                    || n.Name == Constants.ProductName.IE_10
                     || n.Name == Constants.ProductName.IE_11
                     );
 
@@ -467,8 +465,6 @@ namespace CVESummaryGenerator
                 Constants.ProductName.MS_NET_Framework_4_x,
                 Constants.ProductName.MS_SQL_Server_2014_x,
                 Constants.ProductName.MS_Edge,
-                Constants.ProductName.IE_9,
-                Constants.ProductName.IE_10,
                 Constants.ProductName.IE_11
             };
         }

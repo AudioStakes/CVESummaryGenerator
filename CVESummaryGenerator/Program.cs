@@ -159,6 +159,7 @@ namespace CVESummaryGenerator
             DatatableToCSVConverter csv = new DatatableToCSVConverter();
 
             // DistinctなダウンロードＵＲＬを取得する
+            // TODO:ADV系の記事を集計から除去する or ADV系であることがわかるようにする
             DataTable distinctUrlForEachName = affectedTargetProductsTable.DefaultView.ToTable(true, "Name", "ArticleUrl1", "DownloadTitle1", "DownloadUrl1", "ArticleUrl2", "DownloadTitle2", "DownloadUrl2", "ArticleUrl3", "DownloadTitle3", "DownloadUrl3", "ArticleUrl4", "DownloadTitle4", "DownloadUrl4");
 
             // DataTableをCSVで保存する

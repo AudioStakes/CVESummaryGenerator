@@ -187,32 +187,39 @@ namespace CVESummaryGenerator
 
         private static void CheckEaseOfAttack(DataRow workRow)
         {
-            string CVSS = workRow[Constants.SummaryTableColumn.VectorString] as string;
-            bool IS_AV_N = CVSS.Contains("AV:N");
-            bool IS_AC_L = CVSS.Contains("AC:L");
-            bool IS_PR_N = CVSS.Contains("PR:N");
-            bool IS_UI_N = CVSS.Contains("UI:N");
+            if (String.IsNullOrEmpty(workRow[Constants.SummaryTableColumn.VectorString] as string))
+            {
+                workRow[Constants.SummaryTableColumn.EaseOfAttack] = "";
+            }
+            else
+            {
+                string CVSS = workRow[Constants.SummaryTableColumn.VectorString] as string;
+                bool IS_AV_N = CVSS.Contains("AV:N");
+                bool IS_AC_L = CVSS.Contains("AC:L");
+                bool IS_PR_N = CVSS.Contains("PR:N");
+                bool IS_UI_N = CVSS.Contains("UI:N");
 
-            if (IS_AV_N && IS_AC_L && IS_PR_N && IS_UI_N)
-            {
-                workRow[Constants.SummaryTableColumn.EaseOfAttack] = "★★★危険。詳細を要チェック★★★";
-            }
+                if (IS_AV_N && IS_AC_L && IS_PR_N && IS_UI_N)
+                {
+                    workRow[Constants.SummaryTableColumn.EaseOfAttack] = "★★★危険。詳細を要チェック★★★";
+                }
 
-            if (!IS_AV_N)
-            {
-                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "(-)攻撃元区分はネットワークではない" + Environment.NewLine;
-            }
-            if (!IS_AC_L)
-            {
-                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "(-)攻撃条件の複雑さが高い" + Environment.NewLine;
-            }
-            if (!IS_PR_N)
-            {
-                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "(-)特権レベルが必要とされている" + Environment.NewLine;
-            }
-            if (!IS_UI_N)
-            {
-                workRow[Constants.SummaryTableColumn.EaseOfAttack] += "(-)ユーザ関与を必要とする" + Environment.NewLine;
+                if (!IS_AV_N)
+                {
+                    workRow[Constants.SummaryTableColumn.EaseOfAttack] += "(-)攻撃元区分はネットワークではない" + Environment.NewLine;
+                }
+                if (!IS_AC_L)
+                {
+                    workRow[Constants.SummaryTableColumn.EaseOfAttack] += "(-)攻撃条件の複雑さが高い" + Environment.NewLine;
+                }
+                if (!IS_PR_N)
+                {
+                    workRow[Constants.SummaryTableColumn.EaseOfAttack] += "(-)特権レベルが必要とされている" + Environment.NewLine;
+                }
+                if (!IS_UI_N)
+                {
+                    workRow[Constants.SummaryTableColumn.EaseOfAttack] += "(-)ユーザ関与を必要とする" + Environment.NewLine;
+                }
             }
         }
 
@@ -248,8 +255,7 @@ namespace CVESummaryGenerator
 
         private static object CreateStringOfReleaseValueForTable(ReleaseExploitability ReleaseExploitability)
         {
-            return ReleaseExploitability.Id.ToString() + "-" + ReleaseExploitability.Name;
-
+            return ReleaseExploitability == null ? "" : ReleaseExploitability.Id.ToString() + "-" + ReleaseExploitability.Name;
         }
 
         private static void SetColumnsToAffectedTargetProductsTable(DataTable affectedTargetProductsTable)
@@ -365,7 +371,9 @@ namespace CVESummaryGenerator
 
         private static void CheckIfEqualToAssignedData(AffectedProduct summaryOfTargetProducts, AffectedProduct affectedTargetProduct)
         {
-            if (!summaryOfTargetProducts.VectorString.Equals(affectedTargetProduct.VectorString))
+            if (affectedTargetProduct.VectorString != null
+                && summaryOfTargetProducts.VectorString != null
+                && !summaryOfTargetProducts.VectorString.Equals(affectedTargetProduct.VectorString))
             {
                 summaryOfTargetProducts.VectorString = default(string);
                 Console.WriteLine("対象製品のVectorStringに一致しない値があります");

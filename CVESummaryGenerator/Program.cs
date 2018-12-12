@@ -80,8 +80,14 @@ namespace CVESummaryGenerator
                     continue;
                 }
 
+                // supply settings to JsonConvert.DeserializeObject to handle null values
+                var settings = new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    MissingMemberHandling = MissingMemberHandling.Ignore
+                };
                 // JSONを.NETのクラスにデシリアライズ
-                SecurityGuidance sg = JsonConvert.DeserializeObject<SecurityGuidance>(JsonCveInfo);
+                SecurityGuidance sg = JsonConvert.DeserializeObject<SecurityGuidance>(JsonCveInfo, settings);
 
                 // 共通項目のデータを格納する
                 SetCommonCveValueToWorkRow(workRow, sg);

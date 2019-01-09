@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Text;
+using System.IO;
 
 namespace CVESummaryGenerator
 {
@@ -17,13 +18,8 @@ namespace CVESummaryGenerator
             //.NET Frameworkクラスライブラリのエンコードの完全セットを.NET Coreアプリケーションで利用できるにする
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            //CSVファイルに書き込むときに使うEncoding
-            System.Text.Encoding enc =
-                      System.Text.Encoding.GetEncoding("Shift_JIS");
-
-            //書き込むファイルを開く
-            System.IO.StreamWriter sr =
-                new System.IO.StreamWriter(csvPath, false, enc);
+            //書き込むファイルを開く。BOM付きとなるEncoding.UTF8を指定する。
+            StreamWriter sr = new StreamWriter(csvPath, false, Encoding.UTF8);
 
             int colCount = dt.Columns.Count;
             int lastColIndex = colCount - 1;

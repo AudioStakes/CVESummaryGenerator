@@ -94,8 +94,7 @@ namespace CVESummaryGenerator
 
                 // 対象とする製品のデータを抽出する
                 var affectedTargetProducts = sg.AffectedProducts.Where(n =>
-                    n.Name == Constants.ProductName.Win_2008_32Bit_SP2
-                    || n.Name == Constants.ProductName.Win_2012_R2_SeverCore
+                    n.Name == Constants.ProductName.Win_2012_R2_SeverCore
                     || n.Name == Constants.ProductName.Win_2012_R2
                     || n.Name == Constants.ProductName.Win_2016_ServerCore
                     || n.Name == Constants.ProductName.Win_2016
@@ -471,7 +470,6 @@ namespace CVESummaryGenerator
         private static List<string> GetTargetProducts()
         {
             return new List<string>(){
-                Constants.ProductName.Win_2008_32Bit_SP2,
                 Constants.ProductName.Win_2012_R2_SeverCore,
                 Constants.ProductName.Win_2012_R2,
                 Constants.ProductName.Win_2016_ServerCore,

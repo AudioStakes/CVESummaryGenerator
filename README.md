@@ -6,17 +6,17 @@
 	* 「表示:  □詳細 □深刻度 □影響度」のチェックボックス全てにチェックを入れる
 1. Excelを開き、以下の通りに「製品」と「プラットフォーム」の２列をフィルタリング。
 	* 「製品」
-		* Windows Server 2008 for 32-bit Systems Service Pack 2
 		* Windows Server 2012 R2 (Server Core installation)
 		* Windows Server 2016 (Server Core installation)
 		* Internet Explorer 11
 		* ※Microsoft Edge, Internet Explorer 9,10は不要
 		* ※.NETとMSSQLは詳細ファイル参照
+		* ※以前まで対象だったが現在は不要「Windows Server 2008 for 32-bit Systems Service Pack 2」
 	* 「プラットフォーム」
-		* Windows Server 2008 for 32-bit Systems Service Pack 2
 		* Windows Server 2012 R2
 		* Windows Server 2016
 		* (空白セル)
+		* ※以前まで対象だったが現在は不要「Windows Server 2008 for 32-bit Systems Service Pack 2」
 1. ＣＶＥ列を重複削除して対象ＣＶＥを特定
 ## ＣＶＥ情報ダウンロード
 1. app実行

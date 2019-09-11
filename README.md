@@ -18,6 +18,10 @@
 		* (空白セル)
 		* ※以前まで対象だったが現在は不要「Windows Server 2008 for 32-bit Systems Service Pack 2」
 1. ＣＶＥ列を重複削除して対象ＣＶＥを特定
+1. 対象ＣＶＥ一覧を半角スペース区切りで"targetCVEs.txt"に保存
+	* パスは"\CVESummaryGenerator\bin\Debug\targetCVEs.txt"
+	* 保存テキストの例
+		* "CVE-2019-0928 CVE-2019-1267 CVE-2019-1268"
 ## ＣＶＥ情報ダウンロード
 1. app実行
 ## ＣＶＥ一覧まとめ作成（先にまとめExcelに貼り付ける）

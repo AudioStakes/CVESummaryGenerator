@@ -23,7 +23,7 @@ namespace CVESummaryGenerator
 
         public static class ProductName
         {
-            public static readonly string Win_2008_32Bit_SP2 = "Windows Server 2008 for 32-bit Systems Service Pack 2";
+            //public static readonly string Win_2008_32Bit_SP2 = "Windows Server 2008 for 32-bit Systems Service Pack 2";
             public static readonly string Win_2012_R2_SeverCore = "Windows Server 2012 R2 (Server Core installation)";
             public static readonly string Win_2012_R2 = "Windows Server 2012 R2";
             public static readonly string Win_2016_ServerCore = "Windows Server 2016  (Server Core installation)";
